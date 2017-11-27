@@ -37,11 +37,23 @@ int song_2 = [2, 6, 8, 12, 19, 20, 22, 28, 30, 31];
 int song_2 = [0, 13, 36];
 */
 
+// this array holds all the notes on the screen to be rendered
+// max of 30 notes to be rendered
+Note screen_notes1[30];
+Note screen_notes2[30];
+Note screen_notes3[30];
+// number holds number of notes currently rendered
+int num_of_notes;
+
+Note haha;
+
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
 // function declarations
 void drawNote(Note n);
 void drawNote(int progression, int n);
+Note addNote(int num);
+void advance(Note &n);
 
 
 // initializes stuff
@@ -54,20 +66,23 @@ void setup(){
 	tft.fillRect(0,0,  ScreenHeight,ScreenWidth,  ILI9341_BLUE);
 	tft.fillRect(4,4,  ScreenHeight-8,ScreenWidth-8,   ILI9341_BLACK);
 	*/
+	haha = addNote(1);
 }
 
 
 // game loop
 void loop(){
-
+	advance(haha);
+	delay(40);
 }
 
 
-void addNote(int num){
+Note addNote(int num){
 	Note n;
 	n.progression = 0;
 	n.num = num;
 	drawNote(n);
+	return n;
 }
 
 
@@ -103,7 +118,7 @@ void drawNote(Note n){
 
 
 // advanced note one pixel forward.
-void advance(Note n){
+void advance(Note &n){
 	int progression = n.progression;
 	int num = n.num;
 	num++;
@@ -116,6 +131,11 @@ void advance(Note n){
 	tft.drawPixel(centerX+1, progression-6, ILI9341_BLUE);
 	tft.fillRect(centerX-4, progression-4, 9,1,  ILI9341_RED);
 	tft.fillRect(centerX-4, progression+5, 9,1,  ILI9341_YELLOW);
+	n.progression++;
+	if (progression > 350){
+		n.progression = 0;
+	}
+
 }
 
 
@@ -123,11 +143,9 @@ void advance(Note n){
 int main() {
 
 	setup();
+	// sets up 3 lines for the screen.
 	addLine(3);
-	addNote(2);
 	Serial.flush();
-	drawNote(100, 3);
-	delay(3000);
 
 	while (true) {
 		loop();
