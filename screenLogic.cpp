@@ -34,17 +34,18 @@ struct Note {
 };
 
 // temporary song:
-/*
-int song_1 = [1, 3, 5,  7,  9, 10, 11, 17, 25, 32];
-int song_2 = [2, 6, 8, 12, 19, 20, 22, 28, 30, 31];
-int song_2 = [0, 13, 36];
-*/
+int song_1[] = {1, 3, 5,  7,  9, 10, 11, 17, 25, 32};
+int song_2[] = {2, 6, 8, 12, 19, 20, 22, 28, 30, 31};
+int song_3[] = {0, 13, 36};
 
 // these arrays holds all the notes on the screen to be rendered
 // max of 30 notes to be rendered
 Note screen_notes1[MAX_RENDERED_NOTES];
 Note screen_notes2[MAX_RENDERED_NOTES];
 Note screen_notes3[MAX_RENDERED_NOTES];
+int song_counter_1 = 0;
+int song_counter_2 = 0;
+int song_counter_3 = 0;
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
@@ -54,6 +55,12 @@ void drawNote(int progression, int n);
 Note addNote(int num);
 void advance(Note &n);
 void advanceAllRenderedNotes();
+void addNotesFromSong();
+
+// this will count frames from 1-60
+int counter1 = 0;
+// this will count seconds for the songs;
+int counter2 = 0;
 
 
 // initializes stuff
@@ -78,18 +85,39 @@ void setup(){
 		screen_notes3[i].progression = 0;
 		screen_notes3[i].num = -1;
 	}
-
-	screen_notes1[0] = addNote(1);
-	screen_notes2[0] = addNote(2);
 }
 
 // game loop
 void loop(){
-
 	advanceAllRenderedNotes();
-
-
 	delay(17);
+
+	counter1++;
+	if (counter1 == 60){
+		addNotesFromSong();
+		counter2++;
+		counter1 = 0;
+	}
+
+}
+
+
+void addNotesFromSong(){
+
+	if (counter2 == song_1[song_counter_1]){
+		screen_notes1[song_counter_1] = addNote(1);
+		song_counter_1++;;
+	}
+
+	if (counter2 == song_2[song_counter_2]){
+		screen_notes2[song_counter_2] = addNote(2);
+		song_counter_2++;
+	}
+
+	if (counter2 == song_3[song_counter_3]){
+		screen_notes3[song_counter_3] = addNote(3);
+		song_counter_3++;
+	}
 }
 
 
@@ -128,6 +156,7 @@ void addLine(int num) {
 	}
 }
 
+
 // draws the note on the screen
 void drawNote(int progression, int num){
 	Note n;
@@ -165,12 +194,12 @@ void advance(Note &n){
 	tft.fillRect(centerX-4, progression+5, 9,1,  ILI9341_YELLOW);
 	n.progression++;
 	if (progression > 350){
-		n.progression = 0;
+		n.num = -1;
 	}
 }
 
 
-
+// main stuff
 int main() {
 
 	setup();
