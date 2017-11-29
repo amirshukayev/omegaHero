@@ -21,6 +21,8 @@ const int TFT_CS = 10;
 const int ScreenWidth = 320;
 const int ScreenHeight = 240;
 
+const int MAX_RENDERED_NOTES = 10;
+
 // Number of vertical Lines
 int lines;
 // game counter
@@ -38,11 +40,11 @@ int song_2 = [2, 6, 8, 12, 19, 20, 22, 28, 30, 31];
 int song_2 = [0, 13, 36];
 */
 
-// this array holds all the notes on the screen to be rendered
+// these arrays holds all the notes on the screen to be rendered
 // max of 30 notes to be rendered
-Note screen_notes1[30];
-Note screen_notes2[30];
-Note screen_notes3[30];
+Note screen_notes1[MAX_RENDERED_NOTES];
+Note screen_notes2[MAX_RENDERED_NOTES];
+Note screen_notes3[MAX_RENDERED_NOTES];
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
@@ -51,6 +53,7 @@ void drawNote(Note n);
 void drawNote(int progression, int n);
 Note addNote(int num);
 void advance(Note &n);
+void advanceAllRenderedNotes();
 
 
 // initializes stuff
@@ -63,15 +66,46 @@ void setup(){
 	tft.fillRect(0,0,  ScreenHeight,ScreenWidth,  ILI9341_BLUE);
 	tft.fillRect(4,4,  ScreenHeight-8,ScreenWidth-8,   ILI9341_BLACK);
 	*/
+
+	// checks if num is -1, that means it shouldn't be rendered.
+	for (int i = 0; i < MAX_RENDERED_NOTES; i++){
+		screen_notes1[i].progression = 0;
+		screen_notes1[i].num = -1;
+
+		screen_notes2[i].progression = 0;
+		screen_notes2[i].num = -1;
+
+		screen_notes3[i].progression = 0;
+		screen_notes3[i].num = -1;
+	}
+
 	screen_notes1[0] = addNote(1);
 	screen_notes2[0] = addNote(2);
 }
 
 // game loop
 void loop(){
-	advance(screen_notes1[0]);
-	advance(screen_notes2[0]);
+
+	advanceAllRenderedNotes();
+
+
 	delay(17);
+}
+
+
+// Advances all notes currently on the board.
+void advanceAllRenderedNotes(){
+	for (int i = 0; i < MAX_RENDERED_NOTES; i++){
+		if (screen_notes1[i].num > 0){
+			advance(screen_notes1[i]);
+		}
+		if (screen_notes2[i].num > 0){
+			advance(screen_notes2[i]);
+		}
+		if (screen_notes2[i].num > 0){
+			advance(screen_notes3[i]);
+		}
+	}
 }
 
 
