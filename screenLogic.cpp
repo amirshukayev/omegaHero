@@ -23,6 +23,7 @@ const int ScreenHeight = 240;
 
 // Number of vertical Lines
 int lines;
+// game counter
 
 // struct for a note moving across the screen
 struct Note {
@@ -42,10 +43,6 @@ int song_2 = [0, 13, 36];
 Note screen_notes1[30];
 Note screen_notes2[30];
 Note screen_notes3[30];
-// number holds number of notes currently rendered
-int num_of_notes;
-
-Note haha;
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
@@ -66,22 +63,23 @@ void setup(){
 	tft.fillRect(0,0,  ScreenHeight,ScreenWidth,  ILI9341_BLUE);
 	tft.fillRect(4,4,  ScreenHeight-8,ScreenWidth-8,   ILI9341_BLACK);
 	*/
-	haha = addNote(1);
+	screen_notes1[0] = addNote(1);
+	screen_notes2[0] = addNote(2);
 }
-
 
 // game loop
 void loop(){
-	advance(haha);
-	delay(40);
+	advance(screen_notes1[0]);
+	advance(screen_notes2[0]);
+	delay(17);
 }
 
 
+// adds note to the board
 Note addNote(int num){
 	Note n;
 	n.progression = 0;
 	n.num = num;
-	drawNote(n);
 	return n;
 }
 
@@ -96,6 +94,7 @@ void addLine(int num) {
 	}
 }
 
+// draws the note on the screen
 void drawNote(int progression, int num){
 	Note n;
 	n.progression = progression;
@@ -109,8 +108,7 @@ void drawNote(int progression, int num){
 void drawNote(Note n){
 	int num = n.num;
 	int progression = n.progression;
-	num++;
-	int interval = ScreenHeight / (lines+1);
+	int interval = ScreenHeight / (lines);
 	int centerX = (num-1)*interval + 1;
 	tft.fillRect(centerX-6, progression-6, 13,13, ILI9341_RED);
 	tft.fillRect(centerX - 4, progression-4, 9,9, ILI9341_YELLOW);
@@ -135,7 +133,6 @@ void advance(Note &n){
 	if (progression > 350){
 		n.progression = 0;
 	}
-
 }
 
 
