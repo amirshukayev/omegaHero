@@ -85,11 +85,31 @@ void setup(){
 		screen_notes3[i].progression = 0;
 		screen_notes3[i].num = -1;
 	}
+
+
 }
+
+
+void drawInstruments(){
+	tft.drawCircle((ScreenHeight/4)*1, 300, 5, ILI9341_RED);
+	tft.drawCircle((ScreenHeight/4)*1, 300, 6, ILI9341_RED);
+	tft.drawCircle((ScreenHeight/4)*1, 300, 7, ILI9341_YELLOW);
+
+	tft.drawCircle((ScreenHeight/4)*2, 300, 5, ILI9341_RED);
+	tft.drawCircle((ScreenHeight/4)*2, 300, 6, ILI9341_RED);
+	tft.drawCircle((ScreenHeight/4)*2, 300, 7, ILI9341_YELLOW);
+
+	tft.drawCircle((ScreenHeight/4)*3, 300, 5, ILI9341_RED);
+	tft.drawCircle((ScreenHeight/4)*3, 300, 6, ILI9341_RED);
+	tft.drawCircle((ScreenHeight/4)*3, 300, 7, ILI9341_YELLOW);
+}
+
+
 
 // game loop
 void loop(){
 	advanceAllRenderedNotes();
+	// delay of 17 gives us approximately 60 frames per second.
 	delay(17);
 
 	counter1++;
@@ -98,22 +118,23 @@ void loop(){
 		counter2++;
 		counter1 = 0;
 	}
-
+	// redraw instruments every 0.25 seconds
+	if (counter1 == 15){
+		drawInstruments();
+	}
 }
 
 
+// this goes through the song and adds notes to the screen from it.
 void addNotesFromSong(){
-
 	if (counter2 == song_1[song_counter_1]){
 		screen_notes1[song_counter_1] = addNote(1);
 		song_counter_1++;;
 	}
-
 	if (counter2 == song_2[song_counter_2]){
 		screen_notes2[song_counter_2] = addNote(2);
 		song_counter_2++;
 	}
-
 	if (counter2 == song_3[song_counter_3]){
 		screen_notes3[song_counter_3] = addNote(3);
 		song_counter_3++;
@@ -133,6 +154,17 @@ void advanceAllRenderedNotes(){
 		if (screen_notes2[i].num > 0){
 			advance(screen_notes3[i]);
 		}
+		/*
+		if (screen_notes1[i].progression > 340 && screen_notes1[i].progression < 350){
+			drawInstruments();
+		}
+		else if (screen_notes2[i].progression > 340 && screen_notes2[i].progression < 350){
+			drawInstruments();
+		}
+		else if (screen_notes3[i].progression > 340 && screen_notes3[i].progression < 350){
+			drawInstruments();
+		}
+		*/
 	}
 }
 
@@ -206,6 +238,8 @@ int main() {
 	// sets up 3 lines for the screen.
 	addLine(3);
 	Serial.flush();
+
+	drawInstruments();
 
 	while (true) {
 		loop();
