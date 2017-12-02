@@ -88,6 +88,7 @@ int counter1 = 0;
 int counter2 = 0;
 // player points
 int points = 0;
+bool infinteMode = true;
 
 // calibration data for the touch screen, obtained from documentation
 // the minimum/maximum possible readings from the touch point
@@ -140,6 +141,16 @@ void setup(){
 	}
 }
 
+int toneCounter = 0;
+
+void playNote(){
+	tone(SPEAKER_PIN, C_MIN[toneCounter], 400);
+	toneCounter++;
+	if (toneCounter == 15){
+		toneCounter = 0;
+	}
+}
+
 
 void drawInstruments(){
 	tft.drawCircle((ScreenHeight/4)*1, 300, 5, ILI9341_RED);
@@ -175,9 +186,9 @@ void processTouch(){
 	// range of the display coordinates
 	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
 
-	if (touchX < 75 && touchY < ScreenWidth/4){
+	if (touchX < 100 && touchY < ScreenWidth/4){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-			if (screen_notes1[i].progression > 290 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
+			if (screen_notes1[i].progression > 275 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
 				if (cooldown1){
 					points++;
 					Serial.print("points: ");
@@ -187,6 +198,7 @@ void processTouch(){
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
+					playNote();
 					break;
 				}
 			}
@@ -204,9 +216,9 @@ void processTouch(){
 		}
 	}
 
-	else if (touchX < 75 && touchY > (ScreenWidth * 2)/4){
+	else if (touchX < 100 && touchY > (ScreenWidth * 2)/4){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-			if (screen_notes3[i].progression > 290 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
+			if (screen_notes3[i].progression > 275 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
 				if (cooldown3){
 					points++;
 					Serial.print("points: ");
@@ -216,6 +228,7 @@ void processTouch(){
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
+					playNote();
 					break;
 				}
 			}
@@ -223,8 +236,6 @@ void processTouch(){
 
 		if (cooldown3) {
 			points--;
-			Serial.print("LOST POINTS");
-			Serial.println(points);
 			tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
@@ -233,18 +244,17 @@ void processTouch(){
 		}
 	}
 
-	else if (touchX < 75){
+	else if (touchX < 100){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-			if (screen_notes2[i].progression > 290 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
+			if (screen_notes2[i].progression > 275 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
 				if (cooldown2){
 					points++;
-					Serial.print("points: ");
-					Serial.println(points);
 					cooldown2 = false;
 					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
+					playNote();
 					break;
 				}
 			}
@@ -263,18 +273,32 @@ void processTouch(){
 	}
 }
 
+int delayVal = 8;
 
 // game loop
 void loop(){
 	processTouch();
 	advanceAllRenderedNotes();
 	// delay of 17 gives us approximately 60 frames per second.
-	delay(8);
+	delay(delayVal);
 
 	counter1++;
 	if (counter1 == 60){
 		addNotesFromSong();
 		counter2++;
+
+		// RESETS SONG;
+		if (infinteMode){
+			if (counter2 > 20){
+				counter2 = 0;
+
+				if (delayVal > 2){
+					delayVal--;
+				}
+
+			}
+		}
+
 		counter1 = 0;
 	}
 	// redraw instruments every 0.25 seconds
@@ -305,6 +329,11 @@ void loop(){
 
 // this goes through the song and adds notes to the screen from it.
 void addNotesFromSong(){
+	if (counter2 == 0){
+		song_counter_1 = 0;
+		song_counter_2 = 0;
+		song_counter_3 = 0;
+	}
 	if (counter2 == song_1[song_counter_1]){
 		screen_notes1[song_counter_1] = addNote(1);
 		song_counter_1++;
