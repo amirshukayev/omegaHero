@@ -78,6 +78,8 @@ void addNotesFromSong();
 int counter1 = 0;
 // this will count seconds for the songs;
 int counter2 = 0;
+// player points
+int points = 0;
 
 // calibration data for the touch screen, obtained from documentation
 // the minimum/maximum possible readings from the touch point
@@ -155,19 +157,44 @@ void processTouch(){
 	// range of the display coordinates
 	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
 
-	if (touchX < 300 && touchY < ScreenWidth/4){
-		Serial.println("First.");
-	}
-	else if (touchX < 300 && touchY > (ScreenWidth * 2)/4){
-		Serial.println("Third.");
-	}
-	else if (touchY < 300){
-		Serial.println("Second.");
-	}
+	if (touchX < 30 && touchY < ScreenWidth/4){
 
+		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
 
+			if (screen_notes1[i].progression > 300 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
+				points++;
+				Serial.print("points: ");
+				Serial.println(points);
+			}
+
+		}
+
+	}
+	else if (touchX < 30 && touchY > (ScreenWidth * 2)/4){
+
+		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
+
+			if (screen_notes3[i].progression > 300 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
+				points++;
+				Serial.print("points: ");
+				Serial.println(points);
+			}
+
+		}
+
+	}
+	else if (touchX < 30){
+
+		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
+			if (screen_notes2[i].progression > 300 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
+				points++;
+				Serial.print("points: ");
+				Serial.println(points);
+			}
+
+		}
+	}
 }
-
 
 
 // game loop
@@ -207,7 +234,7 @@ void loop(){
 void addNotesFromSong(){
 	if (counter2 == song_1[song_counter_1]){
 		screen_notes1[song_counter_1] = addNote(1);
-		song_counter_1++;;
+		song_counter_1++;
 	}
 	if (counter2 == song_2[song_counter_2]){
 		screen_notes2[song_counter_2] = addNote(2);
@@ -303,7 +330,9 @@ void advance(Note &n){
 	tft.fillRect(centerX-4, progression-4, 9,1,  ILI9341_RED);
 	tft.fillRect(centerX-4, progression+5, 9,1,  ILI9341_YELLOW);
 	n.progression++;
-	if (progression > 350){
+
+	// kills notes when they fall off the screen
+	if (progression > 330){
 		n.num = -1;
 	}
 }
