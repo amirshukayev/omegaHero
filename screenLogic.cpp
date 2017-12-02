@@ -61,6 +61,10 @@ int song_counter_1 = 0;
 int song_counter_2 = 0;
 int song_counter_3 = 0;
 
+boolean cooldown1 = false;
+boolean cooldown2 = false;
+boolean cooldown3 = false;
+
 // creating the display screen
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 // creating the touchscreen
@@ -152,37 +156,46 @@ void processTouch(){
 	// remember the x-coordinate of touch is really our y-coordinate
 	// on the display
 	int touchY = map(touch.x, TS_MINX, TS_MAXX, 0, TFT_HEIGHT - 1);
-	
+
 	// need to invert the x-axis, so reverse the
 	// range of the display coordinates
 	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
 
 	if (touchX < 30 && touchY < ScreenWidth/4){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-			if (screen_notes1[i].progression > 295 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
-				points++;
-				Serial.print("points: ");
-				Serial.println(points);
+			if (screen_notes1[i].progression > 290 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
+				if (cooldown1){
+					points++;
+					Serial.print("points: ");
+					Serial.println(points);
+					cooldown1 = false;
+				}
 			}
 		}
 	}
 
 	else if (touchX < 30 && touchY > (ScreenWidth * 2)/4){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-			if (screen_notes3[i].progression > 295 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
-				points++;
-				Serial.print("points: ");
-				Serial.println(points);
+			if (screen_notes3[i].progression > 290 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
+				if (cooldown3){
+					points++;
+					Serial.print("points: ");
+					Serial.println(points);
+					cooldown3 = false;
+				}
 			}
 		}
 	}
 
 	else if (touchX < 30){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-			if (screen_notes2[i].progression > 295 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
-				points++;
-				Serial.print("points: ");
-				Serial.println(points);
+			if (screen_notes2[i].progression > 290 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
+				if (cooldown2){
+					points++;
+					Serial.print("points: ");
+					Serial.println(points);
+					cooldown2 = false;
+				}
 			}
 		}
 	}
@@ -205,6 +218,12 @@ void loop(){
 	// redraw instruments every 0.25 seconds
 	if (counter1 == 15){
 		drawInstruments();
+	}
+
+	if (counter1 == 20){
+		cooldown1 = true;
+		cooldown1 = true;
+		cooldown1 = true;
 	}
 
 	/*
