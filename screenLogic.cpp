@@ -161,7 +161,7 @@ void processTouch(){
 	// range of the display coordinates
 	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
 
-	if (touchX < 30 && touchY < ScreenWidth/4){
+	if (touchX < 75 && touchY < ScreenWidth/4){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
 			if (screen_notes1[i].progression > 290 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
 				if (cooldown1){
@@ -169,12 +169,22 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown1 = false;
+					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+					tft.setCursor(0,0);
+					tft.print(points);
+				} else {
+					points--;
+					Serial.print("LOST POINTS");
+					Serial.println(points);
+					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+					tft.setCursor(0,0);
+					tft.print(points);
 				}
 			}
 		}
 	}
 
-	else if (touchX < 30 && touchY > (ScreenWidth * 2)/4){
+	else if (touchX < 75 && touchY > (ScreenWidth * 2)/4){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
 			if (screen_notes3[i].progression > 290 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
 				if (cooldown3){
@@ -182,12 +192,22 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown3 = false;
+					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+					tft.setCursor(0,0);
+					tft.print(points);
+				} else {
+					points--;
+					Serial.print("LOST POINTS");
+					Serial.println(points);
+					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+					tft.setCursor(0,0);
+					tft.print(points);
 				}
 			}
 		}
 	}
 
-	else if (touchX < 30){
+	else if (touchX < 75){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
 			if (screen_notes2[i].progression > 290 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
 				if (cooldown2){
@@ -195,6 +215,16 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown2 = false;
+					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+					tft.setCursor(0,0);
+					tft.print(points);
+				} else {
+					points--;
+					Serial.print("LOST POINTS");
+					Serial.println(points);
+					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+					tft.setCursor(0,0);
+					tft.print(points);
 				}
 			}
 		}
@@ -222,8 +252,8 @@ void loop(){
 
 	if (counter1 == 20){
 		cooldown1 = true;
-		cooldown1 = true;
-		cooldown1 = true;
+		cooldown2 = true;
+		cooldown3 = true;
 	}
 
 	/*
