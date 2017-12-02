@@ -11,11 +11,18 @@ const int note_b = 494;
 const int node_C = 523;
 
 const int C_MAJ[] = {262,294,330,349,392,440,494,523};
-const int C_MIN[] = {};
+const int C_MIN[] = {65/*C*/, 73, 78, 87, 98, 104, 117, 130 /*C*/,
+	 									147, 156, 175, 196, 208, 233, 262 /*c*/,
+										294, 311, 349, 392, 415, 466, 523 /*C*/ };
+
+const int C_MIN_PATTERN_1[] = { C_MIN[7], C_MIN[11], C_MIN[9], C_MIN[11] };
+const int C_MIN_PATTERN_2[] = { C_MIN[7], C_MIN[12], C_MIN[9], C_MIN[12] };
+const int C_MIN_PATTERN_3[] = { C_MIN[7], C_MIN[8],  C_MIN[9], C_MIN[11] };
+const int C_MIN_PATTERN_4[] = { C_MIN[11], C_MIN[8], C_MIN[10], C_MIN[9] };
 
 const int RANDOM_PIN = 33;
 
-int* returnMusic(int len);
+void returnMusic(int *music, int len);
 int randomNumber(int bits);
 
 
