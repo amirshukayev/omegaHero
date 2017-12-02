@@ -18,10 +18,59 @@ int randomNumber(int bits){
 	return rand;
 }
 
-int* returnMusic(int len){
+void returnMusic(int *music, int len){
 
-	int a[] = {1, 2, 3, 4, 5, 6, 7};
+	for (int i = 0; i < len/4; i++){
 
-	return a;
+		int a = randomNumber(2);
+
+		/*
+		Serial.print("oooh: ");
+		Serial.println(a);
+		*/
+
+		if (a == 0){
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_1[j];
+
+			}
+
+		}
+		else if (a == 1){
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_2[j];
+
+			}
+
+		}
+		else if (a == 2) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_3[j];
+
+			}
+
+		}
+		else {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_4[j];
+
+			}
+
+		}
+
+	}
+
+	for (int i = 0; i < 20; i++){
+		Serial.print("this number: ");
+		Serial.println(music[i]);
+	}
 
 }
