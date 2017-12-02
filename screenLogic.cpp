@@ -152,46 +152,38 @@ void processTouch(){
 	// remember the x-coordinate of touch is really our y-coordinate
 	// on the display
 	int touchY = map(touch.x, TS_MINX, TS_MAXX, 0, TFT_HEIGHT - 1);
-
+	
 	// need to invert the x-axis, so reverse the
 	// range of the display coordinates
 	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
 
 	if (touchX < 30 && touchY < ScreenWidth/4){
-
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-
-			if (screen_notes1[i].progression > 300 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
+			if (screen_notes1[i].progression > 295 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
 				points++;
 				Serial.print("points: ");
 				Serial.println(points);
 			}
-
 		}
-
 	}
+
 	else if (touchX < 30 && touchY > (ScreenWidth * 2)/4){
-
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-
-			if (screen_notes3[i].progression > 300 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
+			if (screen_notes3[i].progression > 295 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
 				points++;
 				Serial.print("points: ");
 				Serial.println(points);
 			}
-
 		}
-
 	}
-	else if (touchX < 30){
 
+	else if (touchX < 30){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
-			if (screen_notes2[i].progression > 300 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
+			if (screen_notes2[i].progression > 295 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
 				points++;
 				Serial.print("points: ");
 				Serial.println(points);
 			}
-
 		}
 	}
 }
