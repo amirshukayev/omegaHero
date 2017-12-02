@@ -155,10 +155,10 @@ void processTouch(){
 	// range of the display coordinates
 	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
 
-	if (touchY < 300 && touchX < ScreenHeight/3){
+	if (touchX < 300 && touchY < ScreenWidth/4){
 		Serial.println("First.");
 	}
-	else if (touchY < 300 && touchX > (ScreenHeight * 2)/3){
+	else if (touchX < 300 && touchY > (ScreenWidth * 2)/4){
 		Serial.println("Third.");
 	}
 	else if (touchY < 300){
