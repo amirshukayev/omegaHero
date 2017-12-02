@@ -21,6 +21,20 @@ const int TFT_CS = 10;
 const int ScreenWidth = 320;
 const int ScreenHeight = 240;
 
+const int BUTTON_1 = 11;
+const int BUTTON_2 = 12;
+const int BUTTON_3 = 13;
+
+// macros because A2 instead of just an int
+#define YP A2  // must be an analog pin, use "An" notation!
+#define XM A3  // must be an analog pin, use "An" notation!
+#define YM  5  // can be a digital pin
+#define XP  4  // can be a digital pin
+
+// width/height of the display when rotated horizontally
+#define TFT_WIDTH  320
+#define TFT_HEIGHT 240
+
 const int MAX_RENDERED_NOTES = 10;
 
 // Number of vertical Lines
@@ -47,7 +61,10 @@ int song_counter_1 = 0;
 int song_counter_2 = 0;
 int song_counter_3 = 0;
 
+// creating the display screen
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+// creating the touchscreen
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
 // function declarations
 void drawNote(Note n);
@@ -62,6 +79,17 @@ int counter1 = 0;
 // this will count seconds for the songs;
 int counter2 = 0;
 
+// calibration data for the touch screen, obtained from documentation
+// the minimum/maximum possible readings from the touch point
+#define TS_MINX 150
+#define TS_MINY 120
+#define TS_MAXX 920
+#define TS_MAXY 940
+
+// thresholds to determine if there was a touch
+#define MINPRESSURE   10
+#define MAXPRESSURE 1000
+
 
 // initializes stuff
 void setup(){
@@ -69,6 +97,11 @@ void setup(){
 	Serial.begin(9600);
 	tft.begin();
 	tft.fillScreen(ILI9341_BLACK);
+
+	pinMode(BUTTON_1, INPUT_PULLUP);
+	pinMode(BUTTON_2, INPUT_PULLUP);
+	pinMode(BUTTON_3, INPUT_PULLUP);
+
 	/*
 	tft.fillRect(0,0,  ScreenHeight,ScreenWidth,  ILI9341_BLUE);
 	tft.fillRect(4,4,  ScreenHeight-8,ScreenWidth-8,   ILI9341_BLACK);
@@ -85,8 +118,6 @@ void setup(){
 		screen_notes3[i].progression = 0;
 		screen_notes3[i].num = -1;
 	}
-
-
 }
 
 
@@ -106,11 +137,45 @@ void drawInstruments(){
 
 
 
+void processTouch(){
+	TSPoint touch = ts.getPoint();
+
+	// if they barely press it or if the wind blows on it or something
+	if (touch.z < MINPRESSURE || touch.z > MAXPRESSURE) {
+		// no touch, just quit
+		return;
+	}
+
+	// get the y coordinate of where the display was touched
+	// remember the x-coordinate of touch is really our y-coordinate
+	// on the display
+	int touchY = map(touch.x, TS_MINX, TS_MAXX, 0, TFT_HEIGHT - 1);
+
+	// need to invert the x-axis, so reverse the
+	// range of the display coordinates
+	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
+
+	if (touchY < 300 && touchX < ScreenHeight/3){
+		Serial.println("First.");
+	}
+	else if (touchY < 300 && touchX > (ScreenHeight * 2)/3){
+		Serial.println("Third.");
+	}
+	else if (touchY < 300){
+		Serial.println("Second.");
+	}
+
+
+}
+
+
+
 // game loop
 void loop(){
+	processTouch();
 	advanceAllRenderedNotes();
 	// delay of 17 gives us approximately 60 frames per second.
-	delay(17);
+	delay(8);
 
 	counter1++;
 	if (counter1 == 60){
@@ -122,6 +187,19 @@ void loop(){
 	if (counter1 == 15){
 		drawInstruments();
 	}
+
+	/*
+	if (digitalRead(BUTTON_1) == HIGH){
+		Serial.println("button1");
+	}
+	if (digitalRead(BUTTON_2) == HIGH){
+		Serial.println("button2");
+	}
+	if (digitalRead(BUTTON_2) == HIGH){
+		Serial.println("button3");
+	}
+	*/
+
 }
 
 
