@@ -15,6 +15,7 @@
 #include <Arduino.h>
 #include <Adafruit_ILI9341.h>
 #include <TouchScreen.h>
+#include "musicGenerator.h"
 
 const int TFT_DC = 9;
 const int TFT_CS = 10;
@@ -25,6 +26,8 @@ const int ScreenHeight = 240;
 const int BUTTON_1 = 11;
 const int BUTTON_2 = 12;
 const int BUTTON_3 = 13;
+
+const int SPEAKER_PIN = 47;
 
 // macros because A2 instead of just an int
 #define YP A2  // must be an analog pin, use "An" notation!
@@ -50,7 +53,7 @@ struct Note {
 
 // temporary song:
 int song_1[] = {1, 3, 5,  7,  9, 10, 11, 17, 25, 32};
-int song_2[] = {2, 6, 8, 12, 19, 20, 22, 28, 30, 31};
+int song_2[] = {2, 6, 8, 12, 10, 19, 20, 22, 28, 30, 31};
 int song_3[] = {0, 13, 36};
 
 // these arrays holds all the notes on the screen to be rendered
@@ -111,6 +114,13 @@ void setup(){
 	pinMode(BUTTON_1, INPUT_PULLUP);
 	pinMode(BUTTON_2, INPUT_PULLUP);
 	pinMode(BUTTON_3, INPUT_PULLUP);
+
+	pinMode(SPEAKER_PIN, OUTPUT);
+
+	int *a = returnMusic(5);
+	for(int i = 0; i < 5; i++){
+		Serial.println(a[i]);
+	}
 
 	/*
 	tft.fillRect(0,0,  ScreenHeight,ScreenWidth,  ILI9341_BLUE);
@@ -173,7 +183,7 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown1 = false;
-					tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
@@ -186,7 +196,7 @@ void processTouch(){
 			points--;
 			Serial.print("LOST POINTS");
 			Serial.println(points);
-		  tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+		  tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
@@ -202,7 +212,7 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown3 = false;
-					tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
@@ -215,7 +225,7 @@ void processTouch(){
 			points--;
 			Serial.print("LOST POINTS");
 			Serial.println(points);
-			tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+			tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
@@ -231,7 +241,7 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown2 = false;
-					tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
@@ -244,7 +254,7 @@ void processTouch(){
 			points--;
 			Serial.print("LOST POINTS");
 			Serial.println(points);
-		  tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+		  tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
