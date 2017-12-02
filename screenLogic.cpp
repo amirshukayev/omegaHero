@@ -1,3 +1,4 @@
+
 /*                     HOW THIS IS GONNA WORK
 
 1. Scanner: Every second scans array of notes. if there is a match, note is added
@@ -104,6 +105,9 @@ void setup(){
 	tft.begin();
 	tft.fillScreen(ILI9341_BLACK);
 
+	tft.setCursor(0,0);
+	tft.print(points);
+
 	pinMode(BUTTON_1, INPUT_PULLUP);
 	pinMode(BUTTON_2, INPUT_PULLUP);
 	pinMode(BUTTON_3, INPUT_PULLUP);
@@ -169,18 +173,24 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown1 = false;
+					tft.fillRect(0,0, 10,10, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
-				} else {
-					points--;
-					Serial.print("LOST POINTS");
-					Serial.println(points);
-					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-					tft.setCursor(0,0);
-					tft.print(points);
+					break;
 				}
 			}
+		}
+
+		if (cooldown1) {
+			points--;
+			Serial.print("LOST POINTS");
+			Serial.println(points);
+		  tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+			tft.setCursor(0,0);
+			tft.print(points);
+			cooldown1 = false;
 		}
 	}
 
@@ -192,18 +202,24 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown3 = false;
+					tft.fillRect(0,0, 10,10, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
-				} else {
-					points--;
-					Serial.print("LOST POINTS");
-					Serial.println(points);
-					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-					tft.setCursor(0,0);
-					tft.print(points);
+					break;
 				}
 			}
+		}
+
+		if (cooldown3) {
+			points--;
+			Serial.print("LOST POINTS");
+			Serial.println(points);
+			tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+			tft.setCursor(0,0);
+			tft.print(points);
+			cooldown3 = false;
 		}
 	}
 
@@ -215,18 +231,24 @@ void processTouch(){
 					Serial.print("points: ");
 					Serial.println(points);
 					cooldown2 = false;
+					tft.fillRect(0,0, 10,10, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
-				} else {
-					points--;
-					Serial.print("LOST POINTS");
-					Serial.println(points);
-					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-					tft.setCursor(0,0);
-					tft.print(points);
+					break;
 				}
 			}
+		}
+
+		if (cooldown2) {
+			points--;
+			Serial.print("LOST POINTS");
+			Serial.println(points);
+		  tft.fillRect(0,0, 10,10, ILI9341_BLACK);
+			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+			tft.setCursor(0,0);
+			tft.print(points);
+			cooldown2 = false;
 		}
 	}
 }
