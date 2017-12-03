@@ -15,7 +15,6 @@
 #include <Arduino.h>
 #include <Adafruit_ILI9341.h>
 #include <TouchScreen.h>
-#include "musicGenerator.h"
 
 const int TFT_DC = 9;
 const int TFT_CS = 10;
@@ -53,8 +52,8 @@ struct Note {
 
 // temporary song:
 int song_1[] = {1, 3, 5,  7,  9, 10, 11, 17, 25, 32};
-int song_2[] = {2, 6, 8, 12, 10, 19, 20, 22, 28, 30, 31};
-int song_3[] = {0, 13, 36};
+int song_2[] = {2, 6, 8, 12, 16, 19, 20, 22, 28, 30, 31};
+int song_3[] = {0, 13, 14, 18, 21, 24, 26, 27, 29};
 
 // these arrays holds all the notes on the screen to be rendered
 // max of 30 notes to be rendered
@@ -81,6 +80,49 @@ Note addNote(int num);
 void advance(Note &n);
 void advanceAllRenderedNotes();
 void addNotesFromSong();
+int randomNumber(int bits);
+void returnMusic(int len);
+void onDeath();
+void restart();
+void addLine(int num);
+
+const int note_c = 262;
+const int note_d = 294;
+const int note_e = 330;
+const int note_f = 349;
+const int note_g = 392;
+const int note_a = 440;
+const int note_b = 494;
+const int node_C = 523;
+
+const int C_MAJ[] = {262,294,330,349,392,440,494,523};
+const int C_MIN[] = {65/*C*/, 73, 78, 87, 98, 104, 117, 130 /*C*/,
+	 									147, 156, 175, 196, 208, 233, 262 /*c*/,
+										294, 311, 349, 392, 415, 466, 523 /*C*/ };
+
+const int C_MIN_PATTERN_1[] = { C_MIN[7], C_MIN[11], C_MIN[9], C_MIN[11] };
+const int C_MIN_PATTERN_2[] = { C_MIN[7], C_MIN[12], C_MIN[9], C_MIN[12] };
+const int C_MIN_PATTERN_3[] = { C_MIN[7], C_MIN[8],  C_MIN[9], C_MIN[11] };
+const int C_MIN_PATTERN_4[] = { C_MIN[11], C_MIN[8], C_MIN[10], C_MIN[9] };
+
+const int C_MIN_PATTERN_5[] = { C_MIN[0], C_MIN[1], C_MIN[2], C_MIN[3] };
+const int C_MIN_PATTERN_6[] = { C_MIN[4], C_MIN[3], C_MIN[2], C_MIN[1] };
+const int C_MIN_PATTERN_7[] = { C_MIN[6], C_MIN[5], C_MIN[4], C_MIN[3] };
+const int C_MIN_PATTERN_8[] = { C_MIN[3], C_MIN[4], C_MIN[5], C_MIN[6] };
+
+const int C_MIN_PATTERN_9[] = { C_MIN[14], C_MIN[15], C_MIN[16], C_MIN[17] };
+const int C_MIN_PATTERN_10[] = { C_MIN[15], C_MIN[14], C_MIN[13], C_MIN[12] };
+const int C_MIN_PATTERN_11[] = { C_MIN[16], C_MIN[17], C_MIN[18], C_MIN[19] };
+const int C_MIN_PATTERN_12[] = { C_MIN[18], C_MIN[17], C_MIN[18], C_MIN[16] };
+
+const int C_MIN_PATTERN_13[] = { C_MIN[18], C_MIN[18], C_MIN[17], C_MIN[18] };
+const int C_MIN_PATTERN_14[] = { C_MIN[17], C_MIN[17], C_MIN[16], C_MIN[17] };
+const int C_MIN_PATTERN_15[] = { C_MIN[16], C_MIN[16], C_MIN[19], C_MIN[16] };
+const int C_MIN_PATTERN_16[] = { C_MIN[14], C_MIN[18], C_MIN[14], C_MIN[14] };
+
+const int RANDOM_PIN = 33;
+
+
 
 // this will count frames from 1-60
 int counter1 = 0;
@@ -89,6 +131,12 @@ int counter2 = 0;
 // player points
 int points = 0;
 bool infinteMode = true;
+bool hardMode = false;
+
+int music[20];
+int length_music = 20;
+
+int lives = 3;
 
 // calibration data for the touch screen, obtained from documentation
 // the minimum/maximum possible readings from the touch point
@@ -118,10 +166,19 @@ void setup(){
 
 	pinMode(SPEAKER_PIN, OUTPUT);
 
-	int *a = returnMusic(5);
-	for(int i = 0; i < 5; i++){
-		Serial.println(a[i]);
+	returnMusic(length_music);
+
+	/*
+	Serial.print("pointer: ");
+	int test = (int)&music;
+	Serial.println(test);*/
+
+	/*
+	Serial.println("these are the musical frequencies of the random song");
+	for (int i = 0; i < length_music; i++){
+		Serial.println(music[i]);
 	}
+	*/
 
 	/*
 	tft.fillRect(0,0,  ScreenHeight,ScreenWidth,  ILI9341_BLUE);
@@ -142,12 +199,72 @@ void setup(){
 }
 
 int toneCounter = 0;
+int song_rand[4];
+
+void onDeath(){
+
+	tft.fillScreen(ILI9341_BLACK);
+	tft.setTextColor(ILI9341_RED);
+	tft.setTextSize(4);
+	tft.setCursor(0, 20);
+	tft.println("YOU DIED:(");
+
+	tft.setCursor(40, 60);
+	tft.setTextColor(ILI9341_YELLOW);
+	tft.setTextSize(3);
+	tft.print("SCORE: ");
+	tft.println(points);
+
+	tft.setTextSize(2);
+	tft.setCursor(10, 200);
+	tft.print("touch to continue");
+
+	while(true){
+		TSPoint touch = ts.getPoint();
+
+		// if they barely press it or if the wind blows on it or something
+		if (touch.z < MINPRESSURE || touch.z > MAXPRESSURE) {
+			// no touch, just quit
+		} else {
+			restart();
+		}
+	}
+
+}
+
+void restart(){
+
+	tft.fillScreen(ILI9341_BLACK);
+	addLine(3);
+	tft.setTextSize(2);
+
+	// restarting all the numbers and stuff
+	// that make the game run
+
+	points = 0;
+	counter1 = 0;
+	counter2 = 0;
+	song_counter_1 = 0;
+	song_counter_2 = 0;
+	song_counter_3 = 0;
+	lives = 3;
+
+
+	while(true){
+		loop();
+	}
+}
 
 void playNote(){
-	tone(SPEAKER_PIN, C_MIN[toneCounter], 400);
+
+	tone(SPEAKER_PIN, music[toneCounter], 600);
+	Serial.println(music[toneCounter]);
 	toneCounter++;
-	if (toneCounter == 15){
+	if (toneCounter >= length_music){
+		// resets
 		toneCounter = 0;
+		// makes some more music!
+		returnMusic(length_music);
 	}
 }
 
@@ -191,10 +308,8 @@ void processTouch(){
 			if (screen_notes1[i].progression > 275 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
 				if (cooldown1){
 					points++;
-					Serial.print("points: ");
-					Serial.println(points);
 					cooldown1 = false;
-					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
+					tft.fillRect(0,0, 20,20, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
@@ -205,14 +320,18 @@ void processTouch(){
 		}
 
 		if (cooldown1) {
-			points--;
-			Serial.print("LOST POINTS");
-			Serial.println(points);
+			if (hardMode){
+				points--;
+			}
+
+
 		  tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
 			cooldown1 = false;
+
+			lives--;
 		}
 	}
 
@@ -221,8 +340,7 @@ void processTouch(){
 			if (screen_notes3[i].progression > 275 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
 				if (cooldown3){
 					points++;
-					Serial.print("points: ");
-					Serial.println(points);
+
 					cooldown3 = false;
 					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
@@ -235,12 +353,15 @@ void processTouch(){
 		}
 
 		if (cooldown3) {
-			points--;
+			if (hardMode){
+				points--;
+			}
 			tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
 			cooldown3 = false;
+			lives--;
 		}
 	}
 
@@ -261,15 +382,21 @@ void processTouch(){
 		}
 
 		if (cooldown2) {
-			points--;
-			Serial.print("LOST POINTS");
-			Serial.println(points);
+			if (hardMode){
+				points--;
+			}
 		  tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
 			cooldown2 = false;
+
+			lives--;
 		}
+	}
+
+	if (lives == 0){
+		onDeath();
 	}
 }
 
@@ -453,4 +580,191 @@ int main() {
 	while (true) {
 		loop();
 	}
+}
+
+
+// generates random n-bit integer
+int randomNumber(int bits){
+	// reads voltage from open input in. It randomly fluctuates
+	uint32_t rand = analogRead(RANDOM_PIN) & 1;
+	// loop takes last bit of random voltage and adds it to new random n-bit integer
+	for (int i = 0; i < (bits-1); i++){
+		// AND with ...0001 to get last bit
+		int x = analogRead(RANDOM_PIN) & 1;
+		// left shift by 1 to add new bit to end
+		rand = rand << 1;
+		rand = rand + x;
+		// gives time for voltage to fluctuate sufficiently
+		delay(20);
+	}
+	return rand;
+}
+
+void returnMusic(int len){
+
+
+	for (int i = 0; i < len/4; i++){
+
+		int a = randomNumber(5);
+
+		/*
+		Serial.print("oooh: ");
+		Serial.println(a);
+		*/
+
+		if (a % 16  == 0){
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_1[j];
+
+			}
+
+		}
+		else if (a % 16 == 1){
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_2[j];
+
+			}
+
+		}
+		else if (a % 16 == 2) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_3[j];
+
+			}
+
+		}
+		else if (a % 16 == 3) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_4[j];
+
+			}
+
+		}
+		else if (a % 16 == 4) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_5[j];
+
+			}
+
+		}
+		else if (a % 16 == 5) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_6[j];
+
+			}
+
+		}
+		else if (a % 16 == 6) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_7[j];
+
+			}
+
+		}
+		else if (a % 16 == 7) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_8[j];
+
+			}
+
+		}
+		else if (a % 16 == 8) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_9[j];
+
+			}
+
+		}
+		else if (a % 16 == 9) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_10[j];
+
+			}
+
+		}
+		else if (a % 16 == 10) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_11[j];
+
+			}
+
+		}
+		else if (a % 16 == 11) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_12[j];
+
+			}
+
+		}
+		else if (a % 16 == 12) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_13[j];
+
+			}
+
+		}
+		else if (a % 16 == 13) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_14[j];
+
+			}
+
+		}
+		else if (a % 16 == 14) {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_15[j];
+
+			}
+
+		}
+		else {
+
+			for (int j = 0; j < 4; j++){
+
+				music[((i * 4)+j)] = C_MIN_PATTERN_16[j];
+
+			}
+
+		}
+
+	}
+
+  // for debugging purposes
+	/*
+	for (int i = 0; i < 20; i++){
+		Serial.print("this number: ");
+		Serial.println(music[i]);
+	}
+	*/
+
 }
