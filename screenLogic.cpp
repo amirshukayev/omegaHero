@@ -10,22 +10,29 @@
 3. Playing: If the button is pressed, the clicking segment is checked for
 						available note. If it is then the user is given one point
 
+4. RANDOM SONGS:  generates random music in C-minor (Amir's favourite key)
+
 */
 
 #include <Arduino.h>
 #include <Adafruit_ILI9341.h>
 #include <TouchScreen.h>
 
+// pin constants
 const int TFT_DC = 9;
 const int TFT_CS = 10;
 
+// screen constants
 const int ScreenWidth = 320;
 const int ScreenHeight = 240;
 
+// currently unused
 const int BUTTON_1 = 11;
 const int BUTTON_2 = 12;
 const int BUTTON_3 = 13;
 
+// for square sin wave frequency outputs.
+// sounds like more harsh than normal tones
 const int SPEAKER_PIN = 47;
 
 // macros because A2 instead of just an int
@@ -38,6 +45,7 @@ const int SPEAKER_PIN = 47;
 #define TFT_WIDTH  320
 #define TFT_HEIGHT 240
 
+// 10 works well in terms of lag. shouldnt be more than 6 with current delays
 const int MAX_RENDERED_NOTES = 10;
 
 // Number of vertical Lines
@@ -60,10 +68,13 @@ int song_3[] = {0, 13, 14, 18, 21, 24, 26, 27, 29};
 Note screen_notes1[MAX_RENDERED_NOTES];
 Note screen_notes2[MAX_RENDERED_NOTES];
 Note screen_notes3[MAX_RENDERED_NOTES];
+
+// goes through the first song for displaying notes
 int song_counter_1 = 0;
 int song_counter_2 = 0;
 int song_counter_3 = 0;
 
+// these make sure that 1 tap doesnt give/take away 10+ points at once
 boolean cooldown1 = false;
 boolean cooldown2 = false;
 boolean cooldown3 = false;
@@ -86,6 +97,7 @@ void onDeath();
 void restart();
 void addLine(int num);
 
+// gives us middle octave frequencies
 const int note_c = 262;
 const int note_d = 294;
 const int note_e = 330;
@@ -95,31 +107,39 @@ const int note_a = 440;
 const int note_b = 494;
 const int node_C = 523;
 
+// these two arrays hold the frequencies of notes.
+// follows 440Hz A standard.
+// C minor is 3 octaves for now
 const int C_MAJ[] = {262,294,330,349,392,440,494,523};
 const int C_MIN[] = {65/*C*/, 73, 78, 87, 98, 104, 117, 130 /*C*/,
 	 									147, 156, 175, 196, 208, 233, 262 /*c*/,
 										294, 311, 349, 392, 415, 466, 523 /*C*/ };
 
+// holds patterns for left hand (generally)
 const int C_MIN_PATTERN_1[] = { C_MIN[7], C_MIN[11], C_MIN[9], C_MIN[11] };
 const int C_MIN_PATTERN_2[] = { C_MIN[7], C_MIN[12], C_MIN[9], C_MIN[12] };
 const int C_MIN_PATTERN_3[] = { C_MIN[7], C_MIN[8],  C_MIN[9], C_MIN[11] };
 const int C_MIN_PATTERN_4[] = { C_MIN[11], C_MIN[8], C_MIN[10], C_MIN[9] };
 
+// holds lower scale patterns
 const int C_MIN_PATTERN_5[] = { C_MIN[0], C_MIN[1], C_MIN[2], C_MIN[3] };
 const int C_MIN_PATTERN_6[] = { C_MIN[4], C_MIN[3], C_MIN[2], C_MIN[1] };
 const int C_MIN_PATTERN_7[] = { C_MIN[6], C_MIN[5], C_MIN[4], C_MIN[3] };
 const int C_MIN_PATTERN_8[] = { C_MIN[3], C_MIN[4], C_MIN[5], C_MIN[6] };
 
+// holds higher scale patterns
 const int C_MIN_PATTERN_9[] = { C_MIN[14], C_MIN[15], C_MIN[16], C_MIN[17] };
 const int C_MIN_PATTERN_10[] = { C_MIN[15], C_MIN[14], C_MIN[13], C_MIN[12] };
 const int C_MIN_PATTERN_11[] = { C_MIN[16], C_MIN[17], C_MIN[18], C_MIN[19] };
 const int C_MIN_PATTERN_12[] = { C_MIN[18], C_MIN[17], C_MIN[18], C_MIN[16] };
 
+// holds repeated note patterns
 const int C_MIN_PATTERN_13[] = { C_MIN[18], C_MIN[18], C_MIN[17], C_MIN[18] };
 const int C_MIN_PATTERN_14[] = { C_MIN[17], C_MIN[17], C_MIN[16], C_MIN[17] };
 const int C_MIN_PATTERN_15[] = { C_MIN[16], C_MIN[16], C_MIN[19], C_MIN[16] };
 const int C_MIN_PATTERN_16[] = { C_MIN[14], C_MIN[18], C_MIN[14], C_MIN[14] };
 
+// for the random number generator.
 const int RANDOM_PIN = 33;
 
 
@@ -130,12 +150,26 @@ int counter1 = 0;
 int counter2 = 0;
 // player points
 int points = 0;
+
+// for continuing after the song finishes
 bool infinteMode = true;
+
+// hard mode subtracts points for lives lost
+// not that big of a difficulty increase
 bool hardMode = false;
 
+// holds generated music
+// size of 20 tones is a good middle ground between using a lot of memory, and
+// not making too many calls to the random music generator
 int music[20];
+// holds the length of the song
 int length_music = 20;
 
+// for progressing the music tones
+int toneCounter = 0;
+int song_rand[4];
+
+// counts remaining lives. Lives lost during a mispress.
 int lives = 3;
 
 // calibration data for the touch screen, obtained from documentation
@@ -155,17 +189,24 @@ void setup(){
 	init();
 	Serial.begin(9600);
 	tft.begin();
+
+	// setting up screen
 	tft.fillScreen(ILI9341_BLACK);
 
+	// setting up point counter at top left
 	tft.setCursor(0,0);
+	tft.setTextSize(2);
 	tft.print(points);
 
+	// setting up buttons (NOT USED AS OF YET)
 	pinMode(BUTTON_1, INPUT_PULLUP);
 	pinMode(BUTTON_2, INPUT_PULLUP);
 	pinMode(BUTTON_3, INPUT_PULLUP);
 
+	// setting up piezo speaker
 	pinMode(SPEAKER_PIN, OUTPUT);
 
+	// generates random music for the game
 	returnMusic(length_music);
 
 	/*
@@ -198,27 +239,35 @@ void setup(){
 	}
 }
 
-int toneCounter = 0;
-int song_rand[4];
 
+
+// played when lives is reduced to 0
 void onDeath(){
 
+	// fils screen and adds text
 	tft.fillScreen(ILI9341_BLACK);
 	tft.setTextColor(ILI9341_RED);
 	tft.setTextSize(4);
 	tft.setCursor(0, 20);
 	tft.println("YOU DIED:(");
 
+	// adds text displaying score upon death
 	tft.setCursor(40, 60);
 	tft.setTextColor(ILI9341_YELLOW);
 	tft.setTextSize(3);
 	tft.print("SCORE: ");
 	tft.println(points);
 
+	// displays instructions for continuing the game
 	tft.setTextSize(2);
 	tft.setCursor(10, 200);
 	tft.print("touch to continue");
 
+
+	// this plays the tune from Mario
+	// it is the death tune and is played as followed:
+
+	//BF FFEDC E
 	tone(SPEAKER_PIN,988 ,400 );
 	delay(400);
 
@@ -247,6 +296,7 @@ void onDeath(){
 	delay(210);
 
 
+	// waiting for player to tap to continue
 	while(true){
 		TSPoint touch = ts.getPoint();
 
@@ -254,12 +304,14 @@ void onDeath(){
 		if (touch.z < MINPRESSURE || touch.z > MAXPRESSURE) {
 			// no touch, just quit
 		} else {
+			// go to next state
 			restart();
 		}
 	}
 
 }
 
+// restarting from death screen, moving to play state
 void restart(){
 
 	tft.fillScreen(ILI9341_BLACK);
@@ -277,17 +329,27 @@ void restart(){
 	song_counter_3 = 0;
 	lives = 3;
 
-
+	// goes back to normal state
 	while(true){
 		loop();
 	}
 }
 
+// uses piezo speaker to play a note
 void playNote(){
 
+	// 0.6 seconds for normal notes
 	tone(SPEAKER_PIN, music[toneCounter], 600);
+
+	// for debugging purposes
 	Serial.println(music[toneCounter]);
+
+	// so next tone in the music generator is played
 	toneCounter++;
+
+	// resets the music, and gets some more tunes.
+	// doing this saves space, and reduces amount of calls to the random generator
+	// making the game smoother in general
 	if (toneCounter >= length_music){
 		// resets
 		toneCounter = 0;
@@ -297,6 +359,7 @@ void playNote(){
 }
 
 
+// Draws the circle at the bottom which are kind of instruments
 void drawInstruments(){
 	tft.drawCircle((ScreenHeight/4)*1, 300, 5, ILI9341_RED);
 	tft.drawCircle((ScreenHeight/4)*1, 300, 6, ILI9341_RED);
@@ -313,7 +376,9 @@ void drawInstruments(){
 
 
 
+// to proccess touches on the screen
 void processTouch(){
+	// gets point
 	TSPoint touch = ts.getPoint();
 
 	// if they barely press it or if the wind blows on it or something
@@ -331,68 +396,110 @@ void processTouch(){
 	// range of the display coordinates
 	int touchX = map(touch.y, TS_MINY, TS_MAXY, TFT_WIDTH - 1, 0);
 
+	// if they touch the first intstument
 	if (touchX < 100 && touchY < ScreenWidth/4){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
 			if (screen_notes1[i].progression > 275 && screen_notes1[i].num != -1 && screen_notes1[i].progression < 310){
 				if (cooldown1){
+					// increase points
 					points++;
+
+					// make this instrument cool down a bit
 					cooldown1 = false;
+
+					//update score stuff
 					tft.fillRect(0,0, 20,20, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
+
+					// call tone player
 					playNote();
+
+					// dont need to go through other notes
 					break;
 				}
 			}
 		}
 
+		// this is if they mess up
 		if (cooldown1) {
 			if (hardMode){
+
+				// reduce points if in hard mode
 				points--;
 			}
 
-
+			// update score on display
 		  tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
+
+			// starts up cooldown
 			cooldown1 = false;
 
+			// reduce lives left
 			lives--;
 		}
 	}
 
+	// if they touch the third instrument
 	else if (touchX < 100 && touchY > (ScreenWidth * 2)/4){
+
+		// go through all notes being rendered on the screen
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
+
+			// if the note is in the okay region
 			if (screen_notes3[i].progression > 275 && screen_notes3[i].num != -1 && screen_notes3[i].progression < 310){
+
+				// dont act if its cooling down so one press doesnt count as a bunch
 				if (cooldown3){
+
+					// increase points
 					points++;
 
+					// setup cooldown
 					cooldown3 = false;
+
+					// print updated points to top left
 					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
+
+					// play the sound
 					playNote();
+
+					// dont need to go through other notes
 					break;
 				}
 			}
 		}
 
+		// if the mess up
 		if (cooldown3) {
+
+			// subtract points if player is in hard mode
 			if (hardMode){
 				points--;
 			}
+
+			// update top left point counter
 			tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
 			tft.print(points);
+
+			// setup cooldown
 			cooldown3 = false;
+
+			// reduce lives
 			lives--;
 		}
 	}
 
+	// this logic is the same as above except for the 2nd (middle instrument)
 	else if (touchX < 100){
 		for (int i = 0; i < MAX_RENDERED_NOTES; i++){
 			if (screen_notes2[i].progression > 275 && screen_notes2[i].num != -1 && screen_notes2[i].progression < 310){
@@ -423,30 +530,46 @@ void processTouch(){
 		}
 	}
 
+	// this goes to the death screen state if player loses all their lvies
 	if (lives == 0){
 		onDeath();
 	}
 }
 
+// this gets reduced over time to increase difficulty marginally
+// minimum value of 2
 int delayVal = 8;
 
 // game loop
 void loop(){
 	processTouch();
+
+	// fast algorithm to move notes forward without wasting
+	// time redrawing pixels the same colour
 	advanceAllRenderedNotes();
 	// delay of 17 gives us approximately 60 frames per second.
 	delay(delayVal);
 
+	// counter1 counts frames
 	counter1++;
+
+	// one logic tic a second (or every 60 frames if delay isnt 17)
 	if (counter1 == 60){
+
+		// checks song arrays to see if a note should be added
 		addNotesFromSong();
+
+		// counter 2 counts logic frames
 		counter2++;
 
 		// RESETS SONG;
 		if (infinteMode){
 			if (counter2 > 20){
+
+				// resets counter so song replays every 20 logic frames
 				counter2 = 0;
 
+				// caps speed at delay of 2.
 				if (delayVal > 2){
 					delayVal--;
 				}
@@ -454,13 +577,17 @@ void loop(){
 			}
 		}
 
+		// resets to count until next logic frame
 		counter1 = 0;
 	}
-	// redraw instruments every 0.25 seconds
+
+	// redraw instruments every 0.25 seconds or 15 frames
 	if (counter1 == 15){
 		drawInstruments();
 	}
 
+	// resets cooldowns every 20 logic frames. This is so game still goes fairly fast
+	// and gives enough time for player to react to multiple notes in a row
 	if (counter1 == 20){
 		cooldown1 = true;
 		cooldown2 = true;
@@ -489,14 +616,22 @@ void addNotesFromSong(){
 		song_counter_2 = 0;
 		song_counter_3 = 0;
 	}
+
+	// following 3 if statements check if the note should be added from each
+	// song array
 	if (counter2 == song_1[song_counter_1]){
+
+		// add note if it is in the array
 		screen_notes1[song_counter_1] = addNote(1);
+		// increase counter
 		song_counter_1++;
 	}
+	// same logic as above for 2nd instrument
 	if (counter2 == song_2[song_counter_2]){
 		screen_notes2[song_counter_2] = addNote(2);
 		song_counter_2++;
 	}
+	// same logic as above for 3rd instrument
 	if (counter2 == song_3[song_counter_3]){
 		screen_notes3[song_counter_3] = addNote(3);
 		song_counter_3++;
@@ -507,6 +642,9 @@ void addNotesFromSong(){
 // Advances all notes currently on the board.
 void advanceAllRenderedNotes(){
 	for (int i = 0; i < MAX_RENDERED_NOTES; i++){
+
+		// moves forward all currently rendered notes.
+		// unrendered notes have an insturment (num) value of -1
 		if (screen_notes1[i].num > 0){
 			advance(screen_notes1[i]);
 		}
@@ -533,6 +671,8 @@ void advanceAllRenderedNotes(){
 
 // adds note to the board
 Note addNote(int num){
+
+	// creates not structure and initializes it to given values
 	Note n;
 	n.progression = 0;
 	n.num = num;
@@ -543,16 +683,25 @@ Note addNote(int num){
 // Adds vertical lines for the paths of the notes.
 void addLine(int num) {
 	lines = num;
+
+	// n lines gives n+1 equal segments in between lines
 	num++;
+
+	//creates intervals
 	int interval = ScreenHeight / num;
+
+	// logic for adding to nice intervals
 	for (int i = 0; i < lines; i++){
 		tft.drawRect((interval + i*interval - 1),0,   4,ScreenWidth,  ILI9341_BLUE);
 	}
 }
 
 
-// draws the note on the screen
+// draws the note on the screen.
+// uses basic OOP principles using structs.
 void drawNote(int progression, int num){
+
+	// draws note at given progression
 	Note n;
 	n.progression = progression;
 	n.num = num;
@@ -563,10 +712,17 @@ void drawNote(int progression, int num){
 // progression is from 0 to 320
 // num is from 1 to @param lines
 void drawNote(Note n){
+
+	// gets values from note passed to this function
 	int num = n.num;
 	int progression = n.progression;
+
+	// these calculations pics where to draw it with the information from Note
 	int interval = ScreenHeight / (lines);
 	int centerX = (num-1)*interval + 1;
+
+	// draws on the screen
+	// drawing a note is fairly expensive when there are many of themlmao
 	tft.fillRect(centerX-6, progression-6, 13,13, ILI9341_RED);
 	tft.fillRect(centerX - 4, progression-4, 9,9, ILI9341_YELLOW);
 }
@@ -574,18 +730,24 @@ void drawNote(Note n){
 
 // advanced note one pixel forward.
 void advance(Note &n){
+
+	// this information gets note value and calculates where to draw it and stuff
 	int progression = n.progression;
 	int num = n.num;
 	num++;
 	int interval = ScreenHeight / (lines+1);
 	int centerX = (num-1)*interval + 1;
 
+	// removes and changes only neccesary pixels.
+	// without this accuracy moving the notes is far too slow
 	tft.fillRect(centerX-6, progression-6, 13,1, ILI9341_BLACK);
 	tft.fillRect(centerX-6, progression+7, 13,1, ILI9341_RED);
 	tft.drawPixel(centerX-2, progression-6, ILI9341_BLUE);
 	tft.drawPixel(centerX+1, progression-6, ILI9341_BLUE);
 	tft.fillRect(centerX-4, progression-4, 9,1,  ILI9341_RED);
 	tft.fillRect(centerX-4, progression+5, 9,1,  ILI9341_YELLOW);
+
+	// updates progression to new, further position
 	n.progression++;
 
 	// kills notes when they fall off the screen
@@ -603,6 +765,7 @@ int main() {
 	addLine(3);
 	Serial.flush();
 
+	// three circles representing instruments
 	drawInstruments();
 
 	while (true) {
@@ -611,7 +774,8 @@ int main() {
 }
 
 
-// generates random n-bit integer
+// generates random n-bit integer using voltage fluctuation from
+// empty arduino pin
 int randomNumber(int bits){
 	// reads voltage from open input in. It randomly fluctuates
 	uint32_t rand = analogRead(RANDOM_PIN) & 1;
@@ -628,11 +792,20 @@ int randomNumber(int bits){
 	return rand;
 }
 
+
+// all the following code takes length of array for the song to be generated
+// and generates it to match patterns and notes
+// all in the c-minor key to create
+// an okay sounding song
 void returnMusic(int len){
 
-
+	// goes through all the bars of the song (each bar is 5 notes so each note)
+	// is length of a quarter note
+	// this means bpm can be easily calculated using delay on loop from above in
+	// the code
 	for (int i = 0; i < len/4; i++){
 
+		// 5 bits is sufficient
 		int a = randomNumber(5);
 
 		/*
@@ -640,147 +813,116 @@ void returnMusic(int len){
 		Serial.println(a);
 		*/
 
+		// random number corresponds to different patterns and notes.
 		if (a % 16  == 0){
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_1[j];
-
 			}
 
 		}
 		else if (a % 16 == 1){
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_2[j];
-
 			}
 
 		}
 		else if (a % 16 == 2) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_3[j];
-
 			}
 
 		}
 		else if (a % 16 == 3) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_4[j];
-
 			}
 
 		}
 		else if (a % 16 == 4) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_5[j];
-
 			}
 
 		}
 		else if (a % 16 == 5) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_6[j];
-
 			}
 
 		}
 		else if (a % 16 == 6) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_7[j];
-
 			}
 
 		}
 		else if (a % 16 == 7) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_8[j];
-
 			}
 
 		}
 		else if (a % 16 == 8) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_9[j];
-
 			}
 
 		}
 		else if (a % 16 == 9) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_10[j];
-
 			}
 
 		}
 		else if (a % 16 == 10) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_11[j];
-
 			}
 
 		}
 		else if (a % 16 == 11) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_12[j];
-
 			}
 
 		}
 		else if (a % 16 == 12) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_13[j];
-
 			}
 
 		}
 		else if (a % 16 == 13) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_14[j];
-
 			}
 
 		}
 		else if (a % 16 == 14) {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_15[j];
-
 			}
 
 		}
 		else {
 
 			for (int j = 0; j < 4; j++){
-
 				music[((i * 4)+j)] = C_MIN_PATTERN_16[j];
-
 			}
 
 		}
