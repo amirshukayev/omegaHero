@@ -219,6 +219,34 @@ void onDeath(){
 	tft.setCursor(10, 200);
 	tft.print("touch to continue");
 
+	tone(SPEAKER_PIN,988 ,400 );
+	delay(400);
+
+	tone(SPEAKER_PIN,1397 ,400 );
+	delay(600);
+
+	tone(SPEAKER_PIN,1397 ,200 );
+	delay(200);
+
+	tone(SPEAKER_PIN,1397 ,200 );
+	delay(200);
+
+	tone(SPEAKER_PIN,1319 ,200 );
+	delay(200);
+
+	tone(SPEAKER_PIN,1175 ,200 );
+	delay(200);
+
+	tone(SPEAKER_PIN,1047 ,300 );
+	delay(300);
+
+	tone(SPEAKER_PIN,659 ,200 );
+	delay(210);
+
+	tone(SPEAKER_PIN,659 ,200 );
+	delay(210);
+
+
 	while(true){
 		TSPoint touch = ts.getPoint();
 
