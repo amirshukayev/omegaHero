@@ -534,7 +534,7 @@ void songSelect(){
 		if ((touch.x >= 204) & (touch.y >= 190) & (touch.y <= 300) & (pg != maxpages)){pg++; redrawScroll = true;} //page down
 
 		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 55) & (touch.y <= 124) & (displayedSongs >= 1)){
-			songToPlay = 1+3*(pg-1);
+			songToPlay = 1+3*(pg-1); //TODO this isn't pointing to the displayed song
 			Serial.println("play song 1");
 			delay(50);
 			songTitleScreen();
@@ -672,7 +672,6 @@ void sortMenu(){
 		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 195) & (touch.y <= 242)){if (sortMode != 2){sortMode = 2; pg = 1; drawSortMenuText(); delay(70);}} //difficulty
 		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 250) & (touch.y <= 297)){if (sortMode != 3){sortMode = 3; pg = 1; drawSortMenuText(); delay(70);}} //artist
 		drawSongSelect();
-		refreshList();
 		break;
 	}
 }
