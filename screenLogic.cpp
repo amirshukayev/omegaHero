@@ -8,7 +8,15 @@
  // (___||___)_|  |_|\___|_|  \___/
 */
 
+//Created by Navras Kamal and Amir Shukayev for CMPUT 274 Final Project, December 2017
+//Implements some code used in lectures and by TA's for the course
+
 /*                     HOW THIS IS GONNA WORK
+0. Menu: Base splash screen, main menu with difficulty selector, song selector and
+				 high scores.  Difficulty can be toggled between two states (easy / hard),
+				 there is currently 7 songs in the list, which can be sorted based on
+				 multiple parameters, and highscores are recorded after each games and
+				 are displayed on a sorted list in the highscores tab
 
 1. Scanner: Every second scans array of notes. if there is a match, note is added
 	 				  to the screen.
@@ -167,16 +175,16 @@ int song_rand[4];
 int lives = 3;
 
 //structs used in this program
-struct point{int x; int y;};
+struct point{int x; int y;}; //used to interpret touch
 struct song{String name; String game; int length; int difficulty; String artist; int hiscore;}; //Name, source game, length (seconds), difficulty (1-3), composer / artist, high score
-int numsongs = 7;
-song songs[7];
+int numsongs = 7; //must be hardcoded, currently 7
+song songs[7]; //size of this must also be hardcoded and should be equal to numsongs
 
 //global vars for song listings
 int pg = 1; //current page of songs
-int maxpages = ceil(numsongs/3);
+int maxpages = ceil(numsongs/3); //number of full pages of three songs that can be made from the listed number of songs
 int sortMode = 0; //0: name, 1: length, 2: difficulty, 3: artist
-int displayedSongs;
+int displayedSongs; //number of songs on screen (1-3)
 
 int songToPlay = 0;
 
@@ -260,25 +268,26 @@ void splashScreen(){
 	}
 }
 
-// initializes stuff
+// initializes program
 void setup(){
 	init();
 	Serial.begin(9600);
 	tft.begin();
-
-	// setting up structs
 	tft.fillScreen(ILI9341_BLACK);
+
+	// setting up structs for songs.  To modify / add / remove songs change these values.  Note that you must update the above numsongs and size of songs[]
 	String title[] = {"Mushroom Kingdom Overworld", "Dream Land", "Hyrule Overworld", "Type A (Korobeiniki)", "Green Hills Zone", "Dr. Wily Stage Theme", "Mortal Kombat!"};
 	String game[] = {"Super Mario Bros.", "Kirby's Dream Land", "The Legend of Zelda", "Tetris", "Sonic the Hedgehog", "Mega Man II", "Mortal Kombat"};
-	int length[] = {70, 33, 64, 65, 79, 31, 81};
-	int difficulty[] = {2, 1, 1, 2, 1, 3, 3};
+	int length[] = {70, 33, 64, 65, 79, 31, 81}; //in seconds
+	int difficulty[] = {2, 1, 1, 2, 1, 3, 3}; //no current effect on game play
 	String artist[] = {"Koji Kondo", "Jun Ishikawa", "Koji Kondo", "Hirakazu Tanaka", "Masato Nakamura", "Takashi Tateishi", "The Immortals"};
+	//Names of songs, games and artists are not our property and belong to their original owners.  They are being used here for demonstation and educational purposes and their copyrighted music is not implemented
 
 	for (int i = 0; i < numsongs; i++){
-		songs[i] = {title[i], game[i], length[i], difficulty[i], artist[i], 0};
+		songs[i] = {title[i], game[i], length[i], difficulty[i], artist[i], 0}; //builds structs
 	}
 
-	if(numsongs%3){maxpages++;}
+	if(numsongs%3){maxpages++;} //adds an extra page in case number of songs is not a multiple of three
 
 	Serial.println("");
 	Serial.println("~presort~");
@@ -369,6 +378,7 @@ point checkTouch(){
 
 
 void modeSelect() {
+	//the main menu for the game
 	tft.fillScreen(ILI9341_BLACK);
 	drawBack();
 	tft.setCursor(60, 10);
@@ -397,12 +407,18 @@ void modeSelect() {
 }
 
 void songTitleScreen(){
+	//Displays a countdown before starting a song
 
 	tft.fillScreen(ILI9341_BLACK);
 	tft.setTextSize(3);
 	tft.setTextColor(ILI9341_WHITE);
 	tft.setCursor(0,0);
-	tft.print("Starting in:");
+	tft.print("NOW PLAYING:");
+	tft.setCursor(0,25);
+	tft.setTextSize(2);
+	for(int i = 0; i<24; i++){
+		tft.print(songs[songToPlay].name[i]);
+	}
 	tft.setTextSize(6);
 
 
@@ -543,24 +559,12 @@ void songSelect(){
 		if ((touch.x >= 204) & (touch.y >= 60) & (touch.y <= 180) & (pg != 1)){pg--; redrawScroll = true;} //page up
 		if ((touch.x >= 204) & (touch.y >= 190) & (touch.y <= 300) & (pg != maxpages)){pg++; redrawScroll = true;} //page down
 
-
-/////////////////////////////////////
-//*/POLICETAPEDONOTCROSSPOLICETAPEDONOT
-/////////////////////////////////////
-//*/SSPOLICETAPEDONOTCORSSPOLICETAPEDON
-/////////////////////////////////////
-//*/POLICETAPEDONOTCROSSPOLICETAPEDONOT
-/////////////////////////////////////
-//*/SSPOLICETAPEDONOTCORSSPOLICETAPEDON
-/////////////////////////////////////
-
-
-
 		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 55) & (touch.y <= 124) & (displayedSongs >= 1)){
 			songToPlay = 0+3*(pg-1); //TODO this isn't pointing to the displayed song
 			Serial.print("play song: ");
 			Serial.println(songs[songToPlay].name);
 			delay(50);
+			pg = 1;
 			songTitleScreen();
 		} //Song 1
 
@@ -569,6 +573,7 @@ void songSelect(){
 			Serial.print("play song: ");
 			Serial.println(songs[songToPlay].name);
 			delay(50);
+			pg = 1;
 			songTitleScreen();
 		} //Song 2
 
@@ -577,6 +582,7 @@ void songSelect(){
 			Serial.print("play song ");
 			Serial.println(songs[songToPlay].name);
 			delay(50);
+			pg = 1;
 			songTitleScreen();
 		} //Song 3
 
@@ -792,7 +798,7 @@ void sortList(){
 	//1: length (ascending)
 	//2: difficulty (ascending)
 	//3; game (alphabetical)
-	//4: highscore
+	//4: highscore (descending)
 void sortSongs(int lower, int upper){ //Quicksort: O(nlogn) (usually), O(n^2) worst case
 	int tempArr[numsongs];
 	for(int i = 0; i < numsongs; i++){
@@ -800,7 +806,7 @@ void sortSongs(int lower, int upper){ //Quicksort: O(nlogn) (usually), O(n^2) wo
 		if (sortMode == 1){tempArr[i] = songs[i].length;}
 		if (sortMode == 2){tempArr[i] = songs[i].difficulty;}
 		if (sortMode == 3){tempArr[i] = (int)songs[i].game[0];}
-		if (sortMode == 4){tempArr[i] = songs[i].hiscore;}
+		if (sortMode == 4){tempArr[i] = -songs[i].hiscore;}
 	}
 	int l = lower;
 	int u = upper;
