@@ -271,6 +271,17 @@ void setup(){
 
 	if(numsongs%3){maxpages++;}
 
+	Serial.println("");
+	Serial.println("~presort~");
+	for(int i = 0; i < numsongs; i++){
+		Serial.println(songs[i].name);
+		Serial.print("   L:");
+		Serial.print(songs[i].length);
+		Serial.print(" DIFF:");
+		Serial.print(songs[i].difficulty);
+		Serial.print(" GAME:");
+		Serial.println(songs[i].game);
+	}
 
 	splashScreen();
 
@@ -416,7 +427,7 @@ void endlessDifficultySelect(){
 	tft.setCursor(60, 10);
 	tft.setTextSize(2);
 	tft.setTextColor(ILI9341_WHITE);
-	tft.print("DIFFICULTY");
+	tft.print("~DIFFICULTY~");
 	tft.fillRoundRect(5, 70, 225, 90, 3, ILI9341_WHITE);
 	tft.fillRoundRect(5, 170, 225, 90, 3, ILI9341_WHITE);
 	tft.setTextColor(ILI9341_BLACK);
@@ -511,7 +522,6 @@ void drawSort(){
 void songSelect(){
 	drawSongSelect();
 	Serial.print(maxpages);
-	refreshList();
 	bool redrawScroll = true;
 	while(true){
 		//if the page has changed refresh the page up / down buttons to match
@@ -556,6 +566,18 @@ void refreshList(){
 	//Draws the songs for the current page, sorted appropriately
 	int page = pg - 1;
 	sortList(0, numsongs);												//~FORMAT~
+	Serial.println("");
+	Serial.println("~postsort~");
+	for(int i = 0; i < numsongs; i++){
+		Serial.println(songs[i].name);
+		Serial.print("   L:");
+		Serial.print(songs[i].length);
+		Serial.print(" DIFF:");
+		Serial.print(songs[i].difficulty);
+		Serial.print(" GAME:");
+		Serial.println(songs[i].game);
+	}
+	Serial.println("");
 	tft.fillRect(0, 50, 240, 280, ILI9341_BLACK);		//NAME
 	tft.setTextColor(ILI9341_WHITE);								//	BY: ARTIST
 	tft.setTextSize(1);															//	FROM: GAME
