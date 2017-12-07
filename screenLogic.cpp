@@ -61,7 +61,7 @@ struct Note {
 // temporary song:
 int song_1[] = {1, 3, 5,  7,  9, 10, 11, 17, 25, 32};
 int song_2[] = {2, 6, 8, 12, 16, 19, 20, 22, 28, 30, 31};
-int song_3[] = {0, 13, 14, 18, 21, 24, 26, 27, 29};
+int song_3[] = {0, 4, 13, 14, 18, 21, 24, 26, 27, 29};
 
 // these arrays holds all the notes on the screen to be rendered
 // max of 30 notes to be rendered
@@ -84,19 +84,6 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 // creating the touchscreen
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
-// function declarations
-void drawNote(Note n);
-void drawNote(int progression, int n);
-Note addNote(int num);
-void advance(Note &n);
-void advanceAllRenderedNotes();
-void addNotesFromSong();
-int randomNumber(int bits);
-void returnMusic(int len);
-void onDeath();
-void restart();
-void addLine(int num);
-
 // gives us middle octave frequencies
 const int note_c = 262;
 const int note_d = 294;
@@ -111,7 +98,7 @@ const int node_C = 523;
 // follows 440Hz A standard.
 // C minor is 3 octaves for now
 const int C_MAJ[] = {262,294,330,349,392,440,494,523};
-const int C_MIN[] = {65/*C*/, 73, 78, 87, 98, 104, 117, 130 /*C*/,
+const int C_MIN[] = {147, 156, 175, 196, 208, 233, 262 /*c*/, 130 /*C*/,
 	 									147, 156, 175, 196, 208, 233, 262 /*c*/,
 										294, 311, 349, 392, 415, 466, 523 /*C*/ };
 
@@ -142,8 +129,6 @@ const int C_MIN_PATTERN_16[] = { C_MIN[14], C_MIN[18], C_MIN[14], C_MIN[14] };
 // for the random number generator.
 const int RANDOM_PIN = 33;
 
-
-
 // this will count frames from 1-60
 int counter1 = 0;
 // this will count seconds for the songs;
@@ -172,6 +157,20 @@ int song_rand[4];
 // counts remaining lives. Lives lost during a mispress.
 int lives = 3;
 
+//structs used in this program
+struct point{int x; int y;};
+struct song{String name; String game; int length; int difficulty; String artist; int hiscore;}; //Name, source game, length (seconds), difficulty (1-3), composer / artist, high score
+int numsongs = 7;
+song songs[7];
+
+//global vars for song listings
+int pg = 1; //current page of songs
+int maxpages = ceil(numsongs/3);
+int sortMode = 0; //0: name, 1: length, 2: difficulty, 3: artist
+int displayedSongs;
+
+int songToPlay = 0;
+
 // calibration data for the touch screen, obtained from documentation
 // the minimum/maximum possible readings from the touch point
 #define TS_MINX 150
@@ -184,11 +183,97 @@ int lives = 3;
 #define MAXPRESSURE 1000
 
 
+// function declarations
+void drawNote(Note n);
+void drawNote(int progression, int n);
+Note addNote(int num);
+void advance(Note &n);
+void advanceAllRenderedNotes();
+void addNotesFromSong();
+int randomNumber(int bits);
+void returnMusic(int len);
+void onDeath();
+void restart();
+void addLine(int num);
+void splashScreen();
+void modeSelect();
+point checkTouch();
+void drawBack();
+void drawScroll(int type);
+void endlessDifficultySelect();
+void songSelect();
+void highscores();
+void drawSongSelect();
+void refreshList();
+void sortList(int lower, int upper);
+void sortMenu();
+void drawSortMenuText();
+void refreshScores(int page);
+int lengthString(String s);
+void printString(String s);
+void sortList(int i, int n);
+void drawSort();
+
+void splashScreen(){
+	// draws a fancy splash screen with an ascii art logo
+	tft.fillScreen(0);
+	tft.setCursor(15,30);
+	tft.setTextColor(ILI9341_RED);
+	tft.setTextSize(3);
+	tft.setTextWrap(false);
+	tft.println("~OMEGA HERO~");
+	tft.setCursor(35, 90);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_WHITE);
+	tft.println(" .d88888888b.");
+	tft.setCursor(35, 108);
+	tft.println("d88P\"    \"Y88b ");
+	tft.setCursor(35, 126);
+	tft.println("888        888 ");
+	tft.setCursor(35, 144);
+	tft.println("Y88b      d88P ");
+	tft.setCursor(35, 162);
+	tft.println(" \"88bo  od88\"");
+	tft.setCursor(35, 180);
+	tft.println("d88888  88888b ");
+	tft.setCursor(40, 260);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_RED);
+	tft.println("PRESS ANYWHERE");
+	tft.setCursor(80,278);
+	tft.println("TO PLAY");
+
+	// processes touchscreen taps
+	while(true){
+		point touch = checkTouch();
+		if (touch.x > 0){break;} //ignore (no touch detected)
+	}
+}
+
 // initializes stuff
 void setup(){
 	init();
 	Serial.begin(9600);
 	tft.begin();
+
+	// setting up structs
+	tft.fillScreen(ILI9341_BLACK);
+	String title[] = {"Mushroom Kingdom Overworld", "Dream Land", "Hyrule Overworld", "Type A (Korobeiniki)", "Green Hills Zone", "Dr. Wily Stage Theme", "Mortal Kombat!"};
+	String game[] = {"Super Mario Bros.", "Kirby's Dream Land", "The Legend of Zelda", "Tetris", "Sonic the Hedgehog", "Mega Man II", "Mortal Kombat"};
+	int length[] = {70, 33, 64, 65, 79, 31, 81};
+	int difficulty[] = {2, 1, 1, 2, 1, 3, 3};
+	String artist[] = {"Koji Kondo", "Jun Ishikawa", "Koji Kondo", "Hirakazu Tanaka", "Masato Nakamura", "Takashi Tateishi", "The Immortals"};
+
+	for (int i = 0; i < numsongs; i++){
+		songs[i] = {title[i], game[i], length[i], difficulty[i], artist[i], 0};
+	}
+
+	if(numsongs%3){maxpages++;}
+
+
+	splashScreen();
+
+	tft.setTextColor(ILI9341_WHITE);
 
 	// setting up screen
 	tft.fillScreen(ILI9341_BLACK);
@@ -239,10 +324,440 @@ void setup(){
 	}
 }
 
+point checkTouch(){
+	TSPoint touch = ts.getPoint();
+
+	if ((touch.z < MINPRESSURE) || (touch.z > MAXPRESSURE)) {
+		// no touch, just quit
+		point val = {-1, -1};
+		return val;
+	}
+	// get the y coordinate of where the display was touched
+	// remember the x-coordinate of touch is really our y-coordinate
+	// on the display
+	int touchX = map(touch.x, TS_MINX, TS_MAXX, 0, 240);
+	touchX = constrain(touchX, 0, 240);
+
+	// need to invert the x-axis, so reverse the
+	// range of the display coordinates
+	int touchY = map(touch.y, TS_MINY, TS_MAXY, 0, 320);
+	touchY = constrain(touchY, 0, 320);
+	point val = {touchX, touchY};
+	return val;
+}
+
+
+void modeSelect() {
+	tft.fillScreen(ILI9341_BLACK);
+	drawBack();
+	tft.setCursor(60, 10);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_WHITE);
+	tft.print("~MODE SELECT~");
+	tft.fillRoundRect(5, 70, 225, 60, 3, ILI9341_WHITE);
+	tft.fillRoundRect(5, 140, 225, 60, 3, ILI9341_WHITE);
+	tft.fillRoundRect(5, 210, 225, 60, 3, ILI9341_WHITE);
+	tft.setTextColor(ILI9341_BLACK);
+	tft.setCursor(25, 92);
+	tft.print("DIFFICULTY");
+	tft.setCursor(25, 162);
+	tft.print("SONG SELECT");
+	tft.setCursor(25, 232);
+	tft.print("HIGHSCORES");
+
+	while(true){
+		point touch = checkTouch();
+		if (touch.x < 0){continue;}
+		if ((touch.x <= 40) & (touch.y <= 40)){splashScreen();}
+		if ((touch.y >= 70) & (touch.y <= 130)){endlessDifficultySelect();}
+		if ((touch.y >= 140) & (touch.y <= 200)){songSelect();}
+		if ((touch.y >= 210) & (touch.y <= 270)){highscores();}
+	}
+}
+
+void songTitleScreen(){
+
+	tft.fillScreen(ILI9341_BLACK);
+	tft.setTextSize(3);
+	tft.setTextColor(ILI9341_WHITE);
+	tft.setCursor(0,0);
+	tft.print("Starting in:");
+	tft.setTextSize(6);
+
+
+	tft.setCursor(100,100);
+	tft.print("3");
+	tone(SPEAKER_PIN,440,500);
+	delay(1000);
+	tft.setCursor(100,100);
+	tft.fillRect(80,100,50,50,ILI9341_BLACK);
+
+	tft.print("2");
+	tone(SPEAKER_PIN,440,500);
+	delay(1000);
+	tft.setCursor(100,100);
+	tft.fillRect(80,100,50,50,ILI9341_BLACK);
+
+	tft.print("1");
+	tone(SPEAKER_PIN,440,500);
+	delay(1000);
+
+	tone(SPEAKER_PIN,880,500);
+
+	restart();
+
+}
+
+
+void endlessDifficultySelect(){
+	tft.fillScreen(0);
+	drawBack();
+	tft.setCursor(60, 10);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_WHITE);
+	tft.print("~ENDLESS~");
+	tft.fillRoundRect(5, 70, 225, 90, 3, ILI9341_WHITE);
+	tft.fillRoundRect(5, 170, 225, 90, 3, ILI9341_WHITE);
+	tft.setTextColor(ILI9341_BLACK);
+	tft.setTextSize(3);
+	tft.setCursor(25, 105);
+	tft.print("EASY");
+	tft.setCursor(25, 205);
+	tft.print("HARD");
+
+	bool easy = true;
+
+	tft.fillRoundRect(5, 70, 225, 90, 3, ILI9341_GREEN);
+	tft.setCursor(25, 105);
+	tft.print("EASY");
+
+	while(true){
+		point touch = checkTouch();
+		if (touch.x < 0){continue;}
+		if ((touch.x <= 40) & (touch.y <= 40)){modeSelect();}
+		if ((touch.y >= 70) & (touch.y <= 160)){
+
+			if (easy){
+
+			} else {
+
+				tft.fillRoundRect(5, 70, 225, 90, 3, ILI9341_GREEN);
+				tft.setCursor(25, 105);
+				tft.print("EASY");
+
+				tft.fillRoundRect(5, 170, 225, 90, 3, ILI9341_WHITE);
+				tft.setCursor(25, 205);
+				tft.print("HARD");
+
+				lives = 5;
+
+				easy = true;
+
+			}
+			/**TODO:easy endless mode*/
+			hardMode = false;
+			//Serial.println("EZMODE");
+			delay(50);
+		}
+		if ((touch.y >= 170) & (touch.y <= 260)){
+			/**TODO:hard endless mode*/
+			if (easy){
+
+				tft.fillRoundRect(5, 170, 225, 90, 3, ILI9341_RED);
+				tft.setCursor(25, 205);
+				tft.print("HARD");
+
+				tft.fillRoundRect(5, 70, 225, 90, 3, ILI9341_WHITE);
+				tft.setCursor(25, 105);
+				tft.print("EASY");
+
+				lives = 0;
+
+				easy = false;
+
+			} else {
+
+			}
+			Serial.println("HARDMODE");
+			hardMode = true;
+			delay(50);
+		}
+	}
+}
+
+
+void drawSongSelect(){
+	tft.fillScreen(0);
+	drawBack();
+	drawScroll(0);
+	tft.setCursor(60, 10);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_WHITE);
+	tft.print("~SONG SELECT~");
+	drawSort();
+}
+
+void drawSort(){
+	tft.fillRoundRect(10, 285, 172, 32, 2, ILI9341_RED);
+	tft.fillRoundRect(11, 286, 170, 30, 2, ILI9341_WHITE);
+	tft.setCursor(70, 294);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_BLACK);
+	tft.print("SORT");
+}
+
+
+void songSelect(){
+	drawSongSelect();
+	Serial.print(maxpages);
+	refreshList();
+	bool redrawScroll = true;
+	while(true){
+		//if the page has changed refresh the page up / down buttons to match
+		if (redrawScroll){refreshList(); if((pg == 1) & (pg == maxpages)){drawScroll(3);}else if(pg == 1){drawScroll(1);}else if(pg == maxpages){drawScroll(2);}else{drawScroll(0);}; redrawScroll = false; delay(50);}
+
+		point touch = checkTouch();
+		if (touch.x < 0){continue;} //ignore
+		if ((touch.x <= 40) & (touch.y <= 40)){modeSelect(); pg = 1;} //back
+		if ((touch.x >= 204) & (touch.y >= 60) & (touch.y <= 180) & (pg != 1)){pg--; redrawScroll = true;} //page up
+		if ((touch.x >= 204) & (touch.y >= 190) & (touch.y <= 300) & (pg != maxpages)){pg++; redrawScroll = true;} //page down
+
+		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 55) & (touch.y <= 124) & (displayedSongs >= 1)){
+			songToPlay = 1+3*(pg-1);
+			Serial.println("play song 1");
+			delay(50);
+			songTitleScreen();
+		} //Song 1
+
+		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 128) & (touch.y <= 202) & (displayedSongs >= 2)){
+			songToPlay = 1+3*(pg-1);
+			Serial.println("play song 2");
+			delay(50);
+			songTitleScreen();
+		} //Song 2
+
+		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 206) & (touch.y <= 286) & (displayedSongs >= 3)){
+			songToPlay = 1+3*(pg-1);
+			Serial.println("play song 3");
+			delay(50);
+			songTitleScreen();
+		} //Song 3
+
+		//conditions for songs being selected
+		if ((touch.x >= 10) & (touch.x <= 182) & (touch.y >= 285)){
+			sortMenu();
+			redrawScroll = true;
+		} //sort submenu
+	}
+}
+
+void refreshList(){
+	//Draws the songs for the current page, sorted appropriately
+	int page = pg - 1;
+	sortList(0, numsongs);												//~FORMAT~
+	tft.fillRect(0, 50, 240, 280, ILI9341_BLACK);		//NAME
+	tft.setTextColor(ILI9341_WHITE);								//	BY: ARTIST
+	tft.setTextSize(1);															//	FROM: GAME
+	int x = 15;																			//	LENGTH: MM:SS
+	int y = 55;																			//  DIFFICULTY: 0 0 0 (filled in bubbles out of three)
+	displayedSongs = 0;
+	for (int i = 0; i < constrain(numsongs-(3*page), 1, 3); i++){
+		//print name
+		tft.setCursor(x*1, y+(78*i)+14*0);
+		printString(songs[i+(3*page)].name);
+
+		//print artist
+		tft.setCursor(x*2, y+(78*i)+14*1);
+		tft.print("BY: ");
+		printString(songs[i+(3*page)].artist);
+
+		//print source
+		tft.setCursor(x*2, y+(78*i)+14*2);
+		tft.print("FROM: ");
+		printString(songs[i+(3*page)].game);
+
+		//print length
+		tft.setCursor(x*2, y+(78*i)+14*3);
+		tft.print("LENGTH: ");
+		if((songs[i+(3*page)].length)/60 < 10){tft.print("0");}
+		tft.print((songs[i+(3*page)].length)/60);
+		tft.print(":");
+		if((songs[i+(3*page)].length)%60 < 10){tft.print("0");}
+		tft.print(((songs[i+(3*page)]).length)%60); //displays time as mm:ss
+
+		//display difficulty level
+		tft.setCursor(x*2, y+(78*i)+14*4);
+		tft.print("DIFFICULTY: ");
+		int diff = songs[i+(3*page)].difficulty;
+		if(diff == 1){
+			tft.setTextColor(ILI9341_GREEN, ILI9341_GREEN);
+			tft.print("0 ");
+			tft.setTextColor(ILI9341_WHITE, ILI9341_WHITE);
+			tft.print("0 ");
+			tft.print("0 ");
+		}
+		if(diff == 2){
+			tft.setTextColor(ILI9341_YELLOW, ILI9341_YELLOW);
+			tft.print("0 ");
+			tft.print("0 ");
+			tft.setTextColor(ILI9341_WHITE, ILI9341_WHITE);
+			tft.print("0 ");
+		}
+		if(diff == 3){
+			tft.setTextColor(ILI9341_RED, ILI9341_RED);
+			tft.print("0 ");
+			tft.print("0 ");
+			tft.print("0 ");
+		}
+		tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+		//draw a rectangle around the information
+		tft.drawRoundRect(x-5, (y-5)+(78*i), 188, 74, 3, ILI9341_RED);
+
+		displayedSongs++;
+	}
+	drawSort();
+}
+
+void sortMenu(){
+	//bring up sort menu
+	tft.setTextColor(ILI9341_WHITE);
+	//big menu
+	tft.fillRect(0, 56, 240, 318, ILI9341_BLACK);
+	tft.drawRoundRect(5, 60, 225, 250, 3, ILI9341_RED);
+	tft.setCursor(10, 65);
+	tft.setTextSize(2);
+	tft.print("SORT BY:");
+
+	tft.fillRoundRect(8, 87, 218, 45, 2, ILI9341_RED);
+	tft.fillRoundRect(9, 88, 216, 43, 2, ILI9341_WHITE);
+
+	tft.fillRoundRect(8, 142, 218, 45, 2, ILI9341_RED);
+	tft.fillRoundRect(9, 143, 216, 43, 2, ILI9341_WHITE);
+
+	tft.fillRoundRect(8, 197, 218, 45, 2, ILI9341_RED);
+	tft.fillRoundRect(9, 198, 216, 43, 2, ILI9341_WHITE);
+
+	tft.fillRoundRect(8, 252, 218, 45, 2, ILI9341_RED);
+	tft.fillRoundRect(9, 253, 216, 43, 2, ILI9341_WHITE);
+	drawSortMenuText();
+
+	while(true){
+		point touch = checkTouch();
+		if (touch.x < 0){continue;} //ignore
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 80) & (touch.y <= 132)){if (sortMode != 0){sortMode = 0; pg = 1; drawSortMenuText(); delay(70);}} //name
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 140) & (touch.y <= 187)){if (sortMode != 1){sortMode = 1; pg = 1; drawSortMenuText(); delay(70);}} //length
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 195) & (touch.y <= 242)){if (sortMode != 2){sortMode = 2; pg = 1; drawSortMenuText(); delay(70);}} //difficulty
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 250) & (touch.y <= 297)){if (sortMode != 3){sortMode = 3; pg = 1; drawSortMenuText(); delay(70);}} //artist
+		drawSongSelect();
+		refreshList();
+		break;
+	}
+}
+
+
+void drawSortMenuText(){
+	tft.setTextSize(1);
+	tft.setTextColor(ILI9341_BLACK);
+
+	tft.setCursor(15, 107);
+	if(sortMode == 0){tft.setTextColor(ILI9341_GREEN);}
+	tft.print("TITLE (ALPHABETICAL)");
+	if(sortMode == 0){tft.setTextColor(ILI9341_BLACK);}
+
+	tft.setCursor(15, 162);
+	if(sortMode == 1){tft.setTextColor(ILI9341_GREEN);}
+	tft.print("LENGTH (INCREASING)");
+	if(sortMode == 1){tft.setTextColor(ILI9341_BLACK);}
+
+	tft.setCursor(15, 217);
+	if(sortMode == 2){tft.setTextColor(ILI9341_GREEN);}
+	tft.print("DIFFICULTY (INCREASING)");
+	if(sortMode == 2){tft.setTextColor(ILI9341_BLACK);}
+
+	tft.setCursor(15, 272);
+	if(sortMode == 3){tft.setTextColor(ILI9341_GREEN);}
+	tft.print("GAME (ALPHABETICAL)");
+	if(sortMode == 3){tft.setTextColor(ILI9341_BLACK);}
+}
+
+
+void highscores(){
+	int page = 1;
+	int pagemax = ceil(numsongs/5);
+	if(numsongs%5){pagemax++;}
+	tft.fillScreen(0);
+	drawBack();
+	drawScroll(0);
+	refreshScores(page);
+	bool redrawScroll = true;
+	tft.setCursor(60, 10);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_WHITE);
+	tft.print("~HIGH SCORES~");
+	while(true){
+		point touch = checkTouch();
+		if (redrawScroll){if((page == 1) & (page == pagemax)){drawScroll(3);}else if(page == 1){drawScroll(1);}else if(page == pagemax){drawScroll(2);}else{drawScroll(0);}; redrawScroll = false;}
+		if (touch.x < 0){continue;}
+		if ((touch.x <= 40) & (touch.y <= 40)){modeSelect();}
+		if ((touch.x >= 204) & (touch.y >= 60) & (touch.y <= 180) & (page != 1)){page--; refreshScores(page); redrawScroll = true;} //page up
+		if ((touch.x >= 204) & (touch.y >= 190) & (touch.y <= 300) & (page != pagemax)){page++; refreshScores(page); redrawScroll = true;} //page down
+	}
+}
+
+
+void refreshScores(int page){
+	//Draws the highscores for all songs
+	page--;
+	sortList(0, numsongs);
+	tft.fillRect(0, 54, 240, 280, ILI9341_BLACK);
+	tft.setTextColor(ILI9341_WHITE);
+	tft.setTextSize(1);
+	int x = 15;
+	int y = 65;
+	for (int i = 0; i < constrain(numsongs-(5*page), 1, 5); i++){
+		tft.setCursor(x,y+(50*i));
+		String temp = songs[i+(5*page)].name;
+		printString(temp);
+		tft.setCursor(x*2,y+(50*i)+18);
+		tft.print("SCORE: ");
+		tft.print(songs[i+(5*page)].hiscore);
+	}
+}
+
+
+
+//Sorts songs based on current sorting method
+	//0: name (alphabetical)
+	//1: length (ascending)
+	//2: difficulty (ascending)
+	//3; game (alphabetical)
+void sortList(int lower, int upper){ //Quicksort: O(nlogn) (usually), O(n^2) worst case
+	int tempArr[numsongs];
+	for(int i = 0; i < numsongs; i++){
+		if (sortMode == 0){tempArr[i] = (int)songs[i].name[0];}
+		if (sortMode == 1){tempArr[i] = songs[i].length;}
+		if (sortMode == 2){tempArr[i] = songs[i].difficulty;}
+		if (sortMode == 3){tempArr[i] = (int)songs[i].game[0];}
+	}
+	int l = lower;
+	int u = upper;
+	song temp;
+	int piv = tempArr[(l+u)/2];
+	while(l <= u){
+		while(tempArr[l] < piv){++l;}
+		while(tempArr[u] > piv){--u;}
+		if(!(l > u)){temp = songs[l]; songs[l] = songs[u]; songs[u] = temp; ++l; --u;}
+	}
+	if (lower < u){sortList(lower, u);}
+	if (l < upper){sortList(l, upper);}
+}
+//TODO: Fix bug where some elements are copied over others
 
 
 // played when lives is reduced to 0
 void onDeath(){
+
+	songs[songToPlay].hiscore = points;
 
 	// fils screen and adds text
 	tft.fillScreen(ILI9341_BLACK);
@@ -305,11 +820,63 @@ void onDeath(){
 			// no touch, just quit
 		} else {
 			// go to next state
-			restart();
+			modeSelect();
 		}
 	}
-
 }
+
+
+void printString(String s){
+	int len = lengthString(s);
+	if(len > 29){
+		s[27] = 46;
+		s[28] = 46;
+		s[29] = 46;
+		for(int i = 30; i <= len; i++){ //adds ellipses and hides remaining characters if name is too long to display as is
+			s[i] = 0;
+		}
+		tft.print(s);
+	}else{
+		tft.print(s);
+	}
+}
+
+int lengthString(String s){
+	int count = 0;
+	while (s[count]){count++;}
+	// Serial.println(count);
+	return count;
+}
+
+
+
+void drawBack(){
+	// draws back button used to return to the previous screens
+	tft.fillCircle(20, 20, 20, ILI9341_RED);
+	tft.fillCircle(20, 20, 18, ILI9341_WHITE);
+	tft.setCursor(10, 17);
+	tft.setTextSize(1);
+	tft.setTextColor(ILI9341_BLACK);
+	tft.print("BACK");
+}
+
+
+void drawScroll(int type){ //0 = both active, 1 = top inactive, 2 = bottom inactive, 3 = both inactive
+	// draws scroll up and down buttons used to go through highscores and song pages
+	tft.fillRoundRect(204, 60, 28, 110, 2, ILI9341_RED);
+	tft.fillRoundRect(205, 61, 26, 108, 2, ILI9341_WHITE);
+	tft.fillRoundRect(204, 190, 28, 110, 2, ILI9341_RED);
+	tft.fillRoundRect(205, 191, 26, 108, 2, ILI9341_WHITE);
+	if(type == 0){
+		tft.fillTriangle(218,91, 210,140, 226,140, ILI9341_BLACK);
+		tft.fillTriangle(218,270, 210,230, 226,230, ILI9341_BLACK);
+	}else if(type == 1){
+		tft.fillTriangle(218,270, 210,230, 226,230, ILI9341_BLACK);
+	}else if(type == 2){
+		tft.fillTriangle(218,91, 210,140, 226,140, ILI9341_BLACK);
+	}
+}
+
 
 // restarting from death screen, moving to play state
 void restart(){
@@ -328,6 +895,12 @@ void restart(){
 	song_counter_2 = 0;
 	song_counter_3 = 0;
 	lives = 3;
+
+	for (int i = 0; i < MAX_RENDERED_NOTES; i++){
+		screen_notes1[i].num = -1;
+		screen_notes2[i].num = -1;
+		screen_notes3[i].num = -1;
+	}
 
 	// goes back to normal state
 	while(true){
@@ -762,6 +1335,9 @@ int main() {
 
 	setup();
 	// sets up 3 lines for the screen.
+
+	modeSelect();
+
 	addLine(3);
 	Serial.flush();
 
