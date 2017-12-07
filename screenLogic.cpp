@@ -213,6 +213,7 @@ int lengthString(String s);
 void printString(String s);
 void sortList(int i, int n);
 void drawSort();
+void drawLives();
 
 void splashScreen(){
 	// draws a fancy splash screen with an ascii art logo
@@ -246,7 +247,7 @@ void splashScreen(){
 	// processes touchscreen taps
 	while(true){
 		point touch = checkTouch();
-		if (touch.x > 0){break;} //ignore (no touch detected)
+		if (touch.x > 0){break;}
 	}
 }
 
@@ -276,12 +277,12 @@ void setup(){
 	tft.setTextColor(ILI9341_WHITE);
 
 	// setting up screen
-	tft.fillScreen(ILI9341_BLACK);
+	//tft.fillScreen(ILI9341_BLACK);
 
 	// setting up point counter at top left
 	tft.setCursor(0,0);
 	tft.setTextSize(2);
-	tft.print(points);
+	//tft.print(points);
 
 	// setting up buttons (NOT USED AS OF YET)
 	pinMode(BUTTON_1, INPUT_PULLUP);
@@ -415,7 +416,7 @@ void endlessDifficultySelect(){
 	tft.setCursor(60, 10);
 	tft.setTextSize(2);
 	tft.setTextColor(ILI9341_WHITE);
-	tft.print("~ENDLESS~");
+	tft.print("DIFFICULTY");
 	tft.fillRoundRect(5, 70, 225, 90, 3, ILI9341_WHITE);
 	tft.fillRoundRect(5, 170, 225, 90, 3, ILI9341_WHITE);
 	tft.setTextColor(ILI9341_BLACK);
@@ -756,8 +757,9 @@ void sortList(int lower, int upper){ //Quicksort: O(nlogn) (usually), O(n^2) wor
 
 // played when lives is reduced to 0
 void onDeath(){
-
-	songs[songToPlay].hiscore = points;
+	if(points > songs[songToPlay].hiscore){
+		songs[songToPlay].hiscore = points;
+	}
 
 	// fils screen and adds text
 	tft.fillScreen(ILI9341_BLACK);
@@ -903,6 +905,7 @@ void restart(){
 	}
 
 	// goes back to normal state
+	drawLives();
 	while(true){
 		loop();
 	}
@@ -947,7 +950,22 @@ void drawInstruments(){
 	tft.drawCircle((ScreenHeight/4)*3, 300, 7, ILI9341_YELLOW);
 }
 
-
+void drawLives(){
+	tft.fillRect(190, 4, 50, 8, ILI9341_BLACK);//refreshes life counter visuals
+	tft.setCursor(190, 5);
+	tft.setTextSize(1);
+	if(lives == 3){
+		tft.setTextColor(ILI9341_GREEN);
+	}
+	if(lives == 2){
+		tft.setTextColor(ILI9341_YELLOW);
+	}
+	if(lives == 1){
+		tft.setTextColor(ILI9341_RED);
+	}
+	tft.print("LIVES: ");
+	tft.print(lives);
+}
 
 // to proccess touches on the screen
 void processTouch(){
@@ -1014,6 +1032,7 @@ void processTouch(){
 
 			// reduce lives left
 			lives--;
+			drawLives();
 		}
 	}
 
@@ -1069,6 +1088,7 @@ void processTouch(){
 
 			// reduce lives
 			lives--;
+			drawLives();
 		}
 	}
 
@@ -1100,6 +1120,7 @@ void processTouch(){
 			cooldown2 = false;
 
 			lives--;
+			drawLives();
 		}
 	}
 
