@@ -7,7 +7,6 @@
  //  _\ \/ /_| |  | |  __/ | | (_) |
  // (___||___)_|  |_|\___|_|  \___/
 */
-//Third time's the charm
 
 /*                     HOW THIS IS GONNA WORK
 
@@ -215,13 +214,13 @@ void songSelect();
 void highscores();
 void drawSongSelect();
 void refreshList();
-void sortList(int lower, int upper);
+void sortSongs(int lower, int upper);
+void sortList();
 void sortMenu();
 void drawSortMenuText();
 void refreshScores(int page);
 int lengthString(String s);
 void printString(String s);
-void sortList(int i, int n);
 void drawSort();
 void drawLives();
 
@@ -530,8 +529,9 @@ void drawSort(){
 
 
 void songSelect(){
+	sortMode = 0;
+	sortList();
 	drawSongSelect();
-	Serial.print(maxpages);
 	bool redrawScroll = true;
 	while(true){
 		//if the page has changed refresh the page up / down buttons to match
@@ -539,27 +539,43 @@ void songSelect(){
 
 		point touch = checkTouch();
 		if (touch.x < 0){continue;} //ignore
-		if ((touch.x <= 40) & (touch.y <= 40)){modeSelect(); pg = 1;} //back
+		if ((touch.x <= 40) & (touch.y <= 40)){modeSelect(); pg = 1; sortMode = 0;} //back
 		if ((touch.x >= 204) & (touch.y >= 60) & (touch.y <= 180) & (pg != 1)){pg--; redrawScroll = true;} //page up
 		if ((touch.x >= 204) & (touch.y >= 190) & (touch.y <= 300) & (pg != maxpages)){pg++; redrawScroll = true;} //page down
 
+
+/////////////////////////////////////
+//*/POLICETAPEDONOTCROSSPOLICETAPEDONOT
+/////////////////////////////////////
+//*/SSPOLICETAPEDONOTCORSSPOLICETAPEDON
+/////////////////////////////////////
+//*/POLICETAPEDONOTCROSSPOLICETAPEDONOT
+/////////////////////////////////////
+//*/SSPOLICETAPEDONOTCORSSPOLICETAPEDON
+/////////////////////////////////////
+
+
+
 		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 55) & (touch.y <= 124) & (displayedSongs >= 1)){
-			songToPlay = 1+3*(pg-1); //TODO this isn't pointing to the displayed song
-			Serial.println("play song 1");
+			songToPlay = 0+3*(pg-1); //TODO this isn't pointing to the displayed song
+			Serial.print("play song: ");
+			Serial.println(songs[songToPlay].name);
 			delay(50);
 			songTitleScreen();
 		} //Song 1
 
 		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 128) & (touch.y <= 202) & (displayedSongs >= 2)){
 			songToPlay = 1+3*(pg-1);
-			Serial.println("play song 2");
+			Serial.print("play song: ");
+			Serial.println(songs[songToPlay].name);
 			delay(50);
 			songTitleScreen();
 		} //Song 2
 
-		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 206) & (touch.y <= 286) & (displayedSongs >= 3)){
-			songToPlay = 1+3*(pg-1);
-			Serial.println("play song 3");
+		if ((touch.x >= 10) & (touch.x <= 198) & (touch.y >= 206) & (touch.y <= 286) & (displayedSongs == 3)){
+			songToPlay = 2+3*(pg-1);
+			Serial.print("play song ");
+			Serial.println(songs[songToPlay].name);
 			delay(50);
 			songTitleScreen();
 		} //Song 3
@@ -574,20 +590,7 @@ void songSelect(){
 
 void refreshList(){
 	//Draws the songs for the current page, sorted appropriately
-	int page = pg - 1;
-	sortList(0, numsongs);												//~FORMAT~
-	Serial.println("");
-	Serial.println("~postsort~");
-	for(int i = 0; i < numsongs; i++){
-		Serial.println(songs[i].name);
-		Serial.print("   L:");
-		Serial.print(songs[i].length);
-		Serial.print(" DIFF:");
-		Serial.print(songs[i].difficulty);
-		Serial.print(" GAME:");
-		Serial.println(songs[i].game);
-	}
-	Serial.println("");
+	int page = pg - 1;														//~FORMAT~
 	tft.fillRect(0, 50, 240, 280, ILI9341_BLACK);		//NAME
 	tft.setTextColor(ILI9341_WHITE);								//	BY: ARTIST
 	tft.setTextSize(1);															//	FROM: GAME
@@ -677,10 +680,10 @@ void sortMenu(){
 	while(true){
 		point touch = checkTouch();
 		if (touch.x < 0){continue;} //ignore
-		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 80) & (touch.y <= 132)){if (sortMode != 0){sortMode = 0; pg = 1; drawSortMenuText(); delay(70);}} //name
-		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 140) & (touch.y <= 187)){if (sortMode != 1){sortMode = 1; pg = 1; drawSortMenuText(); delay(70);}} //length
-		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 195) & (touch.y <= 242)){if (sortMode != 2){sortMode = 2; pg = 1; drawSortMenuText(); delay(70);}} //difficulty
-		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 250) & (touch.y <= 297)){if (sortMode != 3){sortMode = 3; pg = 1; drawSortMenuText(); delay(70);}} //artist
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 80) & (touch.y <= 132)){if (sortMode != 0){sortMode = 0; pg = 1; drawSortMenuText(); delay(70); sortList(); pg = 1;}} //name
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 140) & (touch.y <= 187)){if (sortMode != 1){sortMode = 1; pg = 1; drawSortMenuText(); delay(70); sortList(); pg = 1;}} //length
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 195) & (touch.y <= 242)){if (sortMode != 2){sortMode = 2; pg = 1; drawSortMenuText(); delay(70); sortList(); pg = 1;}} //difficulty
+		if ((touch.x >= 8) & (touch.x <= 230) & (touch.y >= 250) & (touch.y <= 297)){if (sortMode != 3){sortMode = 3; pg = 1; drawSortMenuText(); delay(70); sortList(); pg = 1;}} //artist
 		drawSongSelect();
 		break;
 	}
@@ -718,6 +721,19 @@ void highscores(){
 	int pagemax = ceil(numsongs/5);
 	if(numsongs%5){pagemax++;}
 	tft.fillScreen(0);
+
+	int maxScore = 0;
+	for (int i = 0; i < numsongs; i++){
+		if (songs[i].hiscore > maxScore){maxScore = songs[i].hiscore;}
+	}
+	if (maxScore > 0){
+		sortMode = 4;
+	}else{
+		sortMode = 0;
+	}
+	sortList();
+	sortMode = 0;
+
 	drawBack();
 	drawScroll(0);
 	refreshScores(page);
@@ -740,7 +756,6 @@ void highscores(){
 void refreshScores(int page){
 	//Draws the highscores for all songs
 	page--;
-	sortList(0, numsongs);
 	tft.fillRect(0, 54, 240, 280, ILI9341_BLACK);
 	tft.setTextColor(ILI9341_WHITE);
 	tft.setTextSize(1);
@@ -756,20 +771,36 @@ void refreshScores(int page){
 	}
 }
 
-
+void sortList(){
+	sortSongs(0, numsongs);
+	Serial.println("");
+	Serial.println("~postsort~");
+	for(int i = 0; i < numsongs; i++){
+		Serial.println(songs[i].name);
+		Serial.print("   L:");
+		Serial.print(songs[i].length);
+		Serial.print(" DIFF:");
+		Serial.print(songs[i].difficulty);
+		Serial.print(" GAME:");
+		Serial.println(songs[i].game);
+	}
+	Serial.println("");
+}
 
 //Sorts songs based on current sorting method
 	//0: name (alphabetical)
 	//1: length (ascending)
 	//2: difficulty (ascending)
 	//3; game (alphabetical)
-void sortList(int lower, int upper){ //Quicksort: O(nlogn) (usually), O(n^2) worst case
+	//4: highscore
+void sortSongs(int lower, int upper){ //Quicksort: O(nlogn) (usually), O(n^2) worst case
 	int tempArr[numsongs];
 	for(int i = 0; i < numsongs; i++){
 		if (sortMode == 0){tempArr[i] = (int)songs[i].name[0];}
 		if (sortMode == 1){tempArr[i] = songs[i].length;}
 		if (sortMode == 2){tempArr[i] = songs[i].difficulty;}
 		if (sortMode == 3){tempArr[i] = (int)songs[i].game[0];}
+		if (sortMode == 4){tempArr[i] = songs[i].hiscore;}
 	}
 	int l = lower;
 	int u = upper;
@@ -780,16 +811,27 @@ void sortList(int lower, int upper){ //Quicksort: O(nlogn) (usually), O(n^2) wor
 		while(tempArr[u] > piv){--u;}
 		if(!(l > u)){temp = songs[l]; songs[l] = songs[u]; songs[u] = temp; ++l; --u;}
 	}
-	if (lower < u){sortList(lower, u);}
-	if (l < upper){sortList(l, upper);}
+	if (lower < u){sortSongs(lower, u);}
+	if (l < upper){sortSongs(l, upper);}
 }
 //TODO: Fix bug where some elements are copied over others
 
 
 // played when lives is reduced to 0
 void onDeath(){
+	Serial.println("");
+	Serial.print("Current Song: ");
+	Serial.println(songs[songToPlay].name);
+	Serial.print("Current hiscore: ");
+	Serial.println(songs[songToPlay].hiscore);
+	Serial.print("Score: ");
+	Serial.println(points);
 	if(points > songs[songToPlay].hiscore){
 		songs[songToPlay].hiscore = points;
+		Serial.print("New Highscore: ");
+		Serial.println(songs[songToPlay].hiscore);
+	}else{
+		Serial.println("No new high score :(");
 	}
 
 	// fils screen and adds text
@@ -937,6 +979,11 @@ void restart(){
 
 	// goes back to normal state
 	drawLives();
+	tft.fillRect(0,0, 11,11, ILI9341_BLACK);
+	tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+	tft.setCursor(0,0);
+	tft.setTextSize(2);
+	tft.print(points);
 	while(true){
 		loop();
 	}
@@ -1033,6 +1080,7 @@ void processTouch(){
 					tft.fillRect(0,0, 20,20, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
+					tft.setTextSize(2);
 					tft.print(points);
 
 					// call tone player
@@ -1063,6 +1111,7 @@ void processTouch(){
 
 			// reduce lives left
 			lives--;
+			tone(SPEAKER_PIN, 988 , 100);
 			drawLives();
 		}
 	}
@@ -1089,6 +1138,7 @@ void processTouch(){
 					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
+					tft.setTextSize(2);
 					tft.print(points);
 
 					// play the sound
@@ -1112,6 +1162,7 @@ void processTouch(){
 			tft.fillRect(0,0, 11,11, ILI9341_BLACK);
 			tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 			tft.setCursor(0,0);
+			tft.setTextSize(2);
 			tft.print(points);
 
 			// setup cooldown
@@ -1119,6 +1170,7 @@ void processTouch(){
 
 			// reduce lives
 			lives--;
+			tone(SPEAKER_PIN, 988 , 100);
 			drawLives();
 		}
 	}
@@ -1151,6 +1203,7 @@ void processTouch(){
 			cooldown2 = false;
 
 			lives--;
+			tone(SPEAKER_PIN, 988 , 100);
 			drawLives();
 		}
 	}
