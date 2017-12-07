@@ -1,4 +1,14 @@
 
+/**
+ //    ____   _    _
+ //   / __ \ | |  | |
+ //  | |  | || |__| | ___ _ __ ___
+ //  | |  | ||  __  |/ _ \ '__/ _ \
+ //  _\ \/ /_| |  | |  __/ | | (_) |
+ // (___||___)_|  |_|\___|_|  \___/
+*/
+
+
 /*                     HOW THIS IS GONNA WORK
 
 1. Scanner: Every second scans array of notes. if there is a match, note is added
