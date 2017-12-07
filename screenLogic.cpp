@@ -415,10 +415,8 @@ void songTitleScreen(){
 	tft.setCursor(0,0);
 	tft.print("NOW PLAYING:");
 	tft.setCursor(0,25);
-	tft.setTextSize(2);
-	for(int i = 0; i<24; i++){
-		tft.print(songs[songToPlay].name[i]);
-	}
+	tft.setTextSize(1);
+	printString(songs[songToPlay].name);
 	tft.setTextSize(6);
 
 
