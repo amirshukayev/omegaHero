@@ -981,6 +981,13 @@ void restart(){
 		screen_notes3[i].num = -1;
 	}
 
+	if (hardMode){
+		lives = 1;
+	} else {
+		lives = 5;
+	}
+
+
 	// goes back to normal state
 	drawLives();
 	tft.fillRect(0,0, 11,11, ILI9341_BLACK);
@@ -1036,7 +1043,7 @@ void drawLives(){
 	tft.fillRect(190, 4, 50, 8, ILI9341_BLACK);//refreshes life counter visuals
 	tft.setCursor(190, 5);
 	tft.setTextSize(1);
-	if(lives == 3){
+	if(lives > 3){
 		tft.setTextColor(ILI9341_GREEN);
 	}
 	if(lives == 2){
@@ -1304,7 +1311,7 @@ void addNotesFromSong(){
 	if (counter2 == song_1[song_counter_1]){
 
 		// add note if it is in the array
-		screen_notes1[song_counter_1] = addNote(1);
+		screen_notes1[song_counter_1] = adz(1);
 		// increase counter
 		song_counter_1++;
 	}
