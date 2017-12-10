@@ -1,2 +1,2 @@
 # omegaHero
-Guitar Hero, but for the Arduino
+Tap Tap Revenge / Guitar Hero, but for the Arduino
