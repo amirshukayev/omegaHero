@@ -1,0 +1,48 @@
+ΩHero (Arduino)
+CMPUT 274 Assignment 3 (Final Project)
+
+TO RUN THE CODE:
+	Unzip the folder
+	Open terminal to the unzipped directory
+	Type "make" into the terminal
+	Connect your Arduino Mega 2560 to the virtual machine, wired as below
+	Type "make upload; serial-mon" into the terminal to upload the code to the Arduino
+
+ACCESSORIES:
+	1x Arduino Mega 2560
+	1x Adafruit_ILI9341 Touchscreen
+	1x Piezo Buzzer
+	Assorted wires
+
+WIRING INSTRUCTIONS
+  Adafruit_ILI9341 Screen: [pin from screen -> pin to Arduino]
+    GND -> GND
+    Vin -> 5V
+    3Vo  NOT CONNECTED
+    CLK -> 52
+    MISO -> 50
+    MOSI -> 51
+    CS  -> 10
+    D/C -> 9
+    RST  NOT CONNECTED
+    Lite  NOT CONNECTED
+    Y+ -> A2 (analog pin)
+    X+ -> 4  (digital pin)
+    Y- -> 5  (digital pin)
+    X- -> A3 (analog pin)
+    IM0 NOT CONNECTED
+    IM1 NOT CONNECTED
+    IM2 NOT CONNECTED
+    IM3 NOT CONNECTED
+    CCS -> 6
+    CD NOT CONNECTED
+
+	Piezo Buzzer: [Choice of Lead1 and Lead2 of the buzzer is arbitrary]
+		47 (Arduino) -> Lead1 (buzzer) -> |Piezo Buzzer| -> Lead2 (buzzer) -> 5V (Arduino)
+
+NOTE
+	Implements code created by TAs and instructors of the course (from eClass)
+	Wiring instructions based on ones from eClass
+
+Created by Amir Shukayev (1506343) and Navras Kamal (1505463)
+December 2017
