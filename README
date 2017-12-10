@@ -1,21 +1,24 @@
 ΩHero (Arduino)
 CMPUT 274 Assignment 3 (Final Project)
 
-TO RUN THE CODE:
+DESCRIPTION
+	This game is modeled based off
+
+TO RUN THE CODE
 	Unzip the folder
 	Open terminal to the unzipped directory
 	Type "make" into the terminal
 	Connect your Arduino Mega 2560 to the virtual machine, wired as below
 	Type "make upload; serial-mon" into the terminal to upload the code to the Arduino
 
-ACCESSORIES:
+ACCESSORIES
 	1x Arduino Mega 2560
 	1x Adafruit_ILI9341 Touchscreen
 	1x Piezo Buzzer
 	Assorted wires
 
 WIRING INSTRUCTIONS
-  Adafruit_ILI9341 Screen: [pin from screen -> pin to Arduino]
+  Adafruit_ILI9341 Screen [pin from screen -> pin to Arduino]:
     GND -> GND
     Vin -> 5V
     3Vo  NOT CONNECTED
@@ -36,9 +39,66 @@ WIRING INSTRUCTIONS
     IM3 NOT CONNECTED
     CCS -> 6
     CD NOT CONNECTED
-
-	Piezo Buzzer: [Choice of Lead1 and Lead2 of the buzzer is arbitrary]
+	Piezo Buzzer [Choice of Lead1 and Lead2 of the buzzer is arbitrary]:
 		47 (Arduino) -> Lead1 (buzzer) -> |Piezo Buzzer| -> Lead2 (buzzer) -> 5V (Arduino)
+
+FILE STRUCTURE
+	screenLogic.cpp is the main file which contains the functions for the game as
+		a whole as well as the imports from other files
+	menus.cpp handles drawing, updating and interacting with the menu system
+	sorting.cpp handles the sorting of the song list using Quicksort
+	menus.h / sorting.h are the headerfiles for the above two files, respectively
+	song.h is the structure for the storage of song metadata
+
+GAME INSTRUCTIONS
+	- Most information is obvious through on screen instructions
+	- The Back button always sends you to the previous screen or exits a submenu
+	- The scroll arrows on the right of the screen become active if there is more
+			information off screen in that direction.  Press them to scroll up or down
+	- In the Difficulty Select screen, Easy Mode sets your starting lives to 5 and
+	 		Hard Mode sets your starting lives to 1
+	- In the Song Select screen you can select the song you wish to play to
+			begin the game
+	- The Sort submenu in Song Select lets you modify the order in which the songs
+	 		are displayed on in the list, based on the listed parameter
+	- Highscores are listed from song with the highest score to song with the
+			lowest (unless no scores are recorded, in which case it is alphabetical by title)
+	- In game tap the circles at the bottom of the screen as the "note" is passing
+			through it to score points.  If you are incorrect with your timing you
+			will lose a life and not score a point.
+	- If you reach 0 lives you lose the game, and if your final score was higher
+			than the previous highest score for that song it will be saved as a new High Score!
+
+HELP AND INFO
+	- The touch screen is oriented differently than it was in previous projects,
+			such that the top of the screen is the side furthest from the Arduino
+	- The touch screen can seem to be a bit inaccurate in the menus at times, but
+			that is because the actual main point of contact of your finger to the
+			screen is lower than you would expect
+	- The wiring is relatively straightforwards
+	- The serial monitor displays information of the execution of the code, such
+			as output from the sorting methods, however it is not used as an input
+			and is not required to play the game
+	- The game is played entirely through the touch screen, thus all menu navigation
+	 		and gameplay is handled there.  It should be intuitive what each button
+			does, but the game instructions above are more explicit
+	- Note that the information for the songs in the song list do not change the
+			gameplay or audio, they are purely for a proof of concept of the sorting
+			methods, as implementing the songs would only have been tedious without
+			adding value to the project as a whole.  However note that the highscores
+			ARE associated with the chosen song, so the selection does have an effect
+			in practice.
+	- Missing a note does not cause you to lose lives or points
+	- High Scores reset upon restarting the Arduino
+	- If adding new songs to the song list make sure to add the metadata to the
+			appropriate location of each array for the name, length (in seconds),
+			difficulty (1-3, 3 being the hardest), source game title, and composer / artist
+	- If you have added or removed any songs be sure to modify the numsongs
+			variable and the initial size of the songs array
+	- The order of the audio notes in the song is a set of preset arrays of frequencies
+			in the C-Minor key which are chosen at random
+	- The order of the visual notes (that you tap in game) is based on a semi-random
+			array of preset values
 
 NOTE
 	Implements code created by TAs and instructors of the course (from eClass)
