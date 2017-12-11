@@ -523,6 +523,8 @@ void processTouch(){
 					tft.setTextSize(2);
 					tft.print(points);
 
+					screen_notes1[i].num += 3;
+
 
 					// call tone player
 					playNote();
@@ -549,7 +551,6 @@ void processTouch(){
 
 			// starts up cooldown
 			cooldown1 = false;
-
 			// reduce lives left
 			lives--;
 			tone(SPEAKER_PIN, 988 , 100);
@@ -574,6 +575,7 @@ void processTouch(){
 
 					// setup cooldown
 					cooldown3 = false;
+					screen_notes3[i].num += 3;
 
 					// print updated points to top left
 					tft.fillRect(0,0, 11,11, ILI9341_BLACK);
@@ -606,6 +608,7 @@ void processTouch(){
 			tft.setTextSize(2);
 			tft.print(points);
 
+
 			// setup cooldown
 			cooldown3 = false;
 
@@ -627,6 +630,7 @@ void processTouch(){
 					tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 					tft.setCursor(0,0);
 					tft.print(points);
+					screen_notes2[i].num += 3;
 					playNote();
 					break;
 				}
@@ -650,7 +654,7 @@ void processTouch(){
 	}
 
 	// this goes to the death screen state if player loses all their lvies
-	if (lives == 0){
+	if (lives < 1){
 		onDeath();
 	}
 }
@@ -875,7 +879,18 @@ void advance(Note &n){
 	n.progression++;
 
 	// kills notes when they fall off the screen
-	if (progression > 330){
+	if (progression > 325){
+
+		if (n.num < 4){
+			lives--;
+			if (lives < 1){
+				onDeath();
+			}
+			drawLives();
+			tone(SPEAKER_PIN, 988, 100);
+			tone(SPEAKER_PIN, 440, 100);
+		}
+
 		n.num = -1;
 	}
 }
