@@ -116,34 +116,45 @@ const int node_C = 523;
 // these two arrays hold the frequencies of notes.
 // follows 440Hz A standard.
 // C minor is 3 octaves for now
-const int C_MAJ[] = {262,294,330,349,392,440,494,523};
 const int C_MIN[] = {147, 156, 175, 196, 208, 233, 262 /*c*/, 130 /*C*/,
 	 									147, 156, 175, 196, 208, 233, 262 /*c*/,
 										294, 311, 349, 392, 415, 466, 523 /*C*/ };
 
+const int D_MIN[] = {147, 165, 175, 196, 220, 233, 262 /*c*/, 117 /*C*/,
+	 									147, 165, 175, 196, 220, 233, 262 /*c*/,
+										294, 330, 349, 392, 440, 466, 523 /*C*/ };
+
+
+const int C_MAJ[] = {147, 165, 175, 196, 220, 245, 262 /*c*/, 117 /*C*/,
+	 									147, 165, 175, 196, 220, 245, 262 /*c*/,
+										294, 330, 349, 392, 440, 494, 523 /*C*/ };
+
+
+int FrequencyList[22];
+
 // holds patterns for left hand (generally)
-const int C_MIN_PATTERN_1[] = { C_MIN[7], C_MIN[11], C_MIN[9], C_MIN[11] };
-const int C_MIN_PATTERN_2[] = { C_MIN[7], C_MIN[12], C_MIN[9], C_MIN[12] };
-const int C_MIN_PATTERN_3[] = { C_MIN[7], C_MIN[8],  C_MIN[9], C_MIN[11] };
-const int C_MIN_PATTERN_4[] = { C_MIN[11], C_MIN[8], C_MIN[10], C_MIN[9] };
+int C_MIN_PATTERN_1[] = { FrequencyList[7], FrequencyList[11], FrequencyList[9], FrequencyList[11] };
+int C_MIN_PATTERN_2[] = { FrequencyList[7], FrequencyList[12], FrequencyList[9], FrequencyList[12] };
+int C_MIN_PATTERN_3[] = { FrequencyList[7], FrequencyList[8],  FrequencyList[9], FrequencyList[11] };
+int C_MIN_PATTERN_4[] = { FrequencyList[11], FrequencyList[8], FrequencyList[10], FrequencyList[9] };
 
 // holds lower scale patterns
-const int C_MIN_PATTERN_5[] = { C_MIN[0], C_MIN[1], C_MIN[2], C_MIN[3] };
-const int C_MIN_PATTERN_6[] = { C_MIN[4], C_MIN[3], C_MIN[2], C_MIN[1] };
-const int C_MIN_PATTERN_7[] = { C_MIN[6], C_MIN[5], C_MIN[4], C_MIN[3] };
-const int C_MIN_PATTERN_8[] = { C_MIN[3], C_MIN[4], C_MIN[5], C_MIN[6] };
+int C_MIN_PATTERN_5[] = { FrequencyList[0], FrequencyList[1], FrequencyList[2], FrequencyList[3] };
+int C_MIN_PATTERN_6[] = { FrequencyList[4], FrequencyList[3], FrequencyList[2], FrequencyList[1] };
+int C_MIN_PATTERN_7[] = { FrequencyList[6], FrequencyList[5], FrequencyList[4], FrequencyList[3] };
+int C_MIN_PATTERN_8[] = { FrequencyList[3], FrequencyList[4], FrequencyList[5], FrequencyList[6] };
 
 // holds higher scale patterns
-const int C_MIN_PATTERN_9[] = { C_MIN[14], C_MIN[15], C_MIN[16], C_MIN[17] };
-const int C_MIN_PATTERN_10[] = { C_MIN[15], C_MIN[14], C_MIN[13], C_MIN[12] };
-const int C_MIN_PATTERN_11[] = { C_MIN[16], C_MIN[17], C_MIN[18], C_MIN[19] };
-const int C_MIN_PATTERN_12[] = { C_MIN[18], C_MIN[17], C_MIN[18], C_MIN[16] };
+int C_MIN_PATTERN_9[] = { FrequencyList[14], FrequencyList[15], FrequencyList[16], FrequencyList[17] };
+int C_MIN_PATTERN_10[] = { FrequencyList[15], FrequencyList[14], FrequencyList[13], FrequencyList[12] };
+int C_MIN_PATTERN_11[] = { FrequencyList[16], FrequencyList[17], FrequencyList[18], FrequencyList[19] };
+int C_MIN_PATTERN_12[] = { FrequencyList[18], FrequencyList[17], FrequencyList[18], FrequencyList[16] };
 
 // holds repeated note patterns
-const int C_MIN_PATTERN_13[] = { C_MIN[18], C_MIN[18], C_MIN[17], C_MIN[18] };
-const int C_MIN_PATTERN_14[] = { C_MIN[17], C_MIN[17], C_MIN[16], C_MIN[17] };
-const int C_MIN_PATTERN_15[] = { C_MIN[16], C_MIN[16], C_MIN[19], C_MIN[16] };
-const int C_MIN_PATTERN_16[] = { C_MIN[14], C_MIN[18], C_MIN[14], C_MIN[14] };
+int C_MIN_PATTERN_13[] = { FrequencyList[18], FrequencyList[18], FrequencyList[17], FrequencyList[18] };
+int C_MIN_PATTERN_14[] = { FrequencyList[17], FrequencyList[17], FrequencyList[16], FrequencyList[17] };
+int C_MIN_PATTERN_15[] = { FrequencyList[16], FrequencyList[16], FrequencyList[19], FrequencyList[16] };
+int C_MIN_PATTERN_16[] = { FrequencyList[14], FrequencyList[18], FrequencyList[14], FrequencyList[14] };
 
 // for the random number generator.
 const int RANDOM_PIN = 33;
@@ -215,6 +226,7 @@ point checkTouch();
 int lengthString(String s);
 void printString(String s);
 void drawLives();
+void selectFrequencies();
 
 
 void setup_screen_notes(){
@@ -248,8 +260,6 @@ void setup_screen_notes(){
 		Serial.print("yeah: ");
 		Serial.println(song_1[i]);
 	}
-
-
 }
 
 
@@ -272,6 +282,8 @@ void setup(){
 	for (int i = 0; i < numsongs; i++){
 		songs[i] = {title[i], game[i], length[i], difficulty[i], artist[i], 0}; //builds structs
 	}
+
+	selectFrequencies();
 
 	if(numsongs%3){maxpages++;} //adds an extra page in case number of songs is not a multiple of three
 
@@ -384,10 +396,120 @@ int lengthString(String s){
 	return count;
 }
 
+
+// selects frequencies for the different songs
+void selectFrequencies(){
+
+	Serial.print("it is: ");
+	Serial.println(songToPlay);
+
+	if (songToPlay % 7 == 0){
+		for (int i = 0; i < 22; i++){
+				FrequencyList[i] = C_MIN[i];
+		}
+	}
+
+	else if (songToPlay % 7 == 1){
+		for (int i = 0; i < 22; i++){
+				FrequencyList[i] = C_MAJ[i];
+		}
+	}
+
+	else {
+		for (int i = 0; i < 22; i++){
+				FrequencyList[i] = D_MIN[i];
+		}
+	}
+
+	C_MIN_PATTERN_1[0] = FrequencyList[7];
+	C_MIN_PATTERN_1[1] = FrequencyList[11];
+	C_MIN_PATTERN_1[2] = FrequencyList[9];
+	C_MIN_PATTERN_1[3] = FrequencyList[11];
+
+	C_MIN_PATTERN_2[0] = FrequencyList[7];
+	C_MIN_PATTERN_2[1] = FrequencyList[12];
+	C_MIN_PATTERN_2[2] = FrequencyList[9];
+	C_MIN_PATTERN_2[3] = FrequencyList[12];
+
+	C_MIN_PATTERN_3[0] = FrequencyList[7];
+	C_MIN_PATTERN_3[1] = FrequencyList[8];
+	C_MIN_PATTERN_3[2] = FrequencyList[9];
+	C_MIN_PATTERN_3[3] = FrequencyList[11];
+
+	C_MIN_PATTERN_4[0] = FrequencyList[11];
+	C_MIN_PATTERN_4[1] = FrequencyList[8];
+	C_MIN_PATTERN_4[2] = FrequencyList[10];
+	C_MIN_PATTERN_4[3] = FrequencyList[9];
+
+	C_MIN_PATTERN_5[0] = FrequencyList[0];
+	C_MIN_PATTERN_5[1] = FrequencyList[1];
+	C_MIN_PATTERN_5[2] = FrequencyList[2];
+	C_MIN_PATTERN_5[3] = FrequencyList[3];
+
+	C_MIN_PATTERN_6[0] = FrequencyList[4];
+	C_MIN_PATTERN_6[1] = FrequencyList[3];
+	C_MIN_PATTERN_6[2] = FrequencyList[2];
+	C_MIN_PATTERN_6[3] = FrequencyList[1];
+
+	C_MIN_PATTERN_7[0] = FrequencyList[6];
+	C_MIN_PATTERN_7[1] = FrequencyList[3];
+	C_MIN_PATTERN_7[2] = FrequencyList[6];
+	C_MIN_PATTERN_7[3] = FrequencyList[3];
+
+	C_MIN_PATTERN_8[0] = FrequencyList[3];
+	C_MIN_PATTERN_8[1] = FrequencyList[4];
+	C_MIN_PATTERN_8[2] = FrequencyList[5];
+	C_MIN_PATTERN_8[3] = FrequencyList[6];
+
+	C_MIN_PATTERN_9[0] = FrequencyList[14];
+	C_MIN_PATTERN_9[1] = FrequencyList[15];
+	C_MIN_PATTERN_9[2] = FrequencyList[16];
+	C_MIN_PATTERN_9[3] = FrequencyList[17];
+
+	C_MIN_PATTERN_10[0] = FrequencyList[14];
+	C_MIN_PATTERN_10[1] = FrequencyList[14];
+	C_MIN_PATTERN_10[2] = FrequencyList[12];
+	C_MIN_PATTERN_10[3] = FrequencyList[11];
+
+	C_MIN_PATTERN_11[0] = FrequencyList[16];
+	C_MIN_PATTERN_11[1] = FrequencyList[17];
+	C_MIN_PATTERN_11[2] = FrequencyList[18];
+	C_MIN_PATTERN_11[3] = FrequencyList[19];
+
+	C_MIN_PATTERN_12[0] = FrequencyList[18];
+	C_MIN_PATTERN_12[1] = FrequencyList[17];
+	C_MIN_PATTERN_12[2] = FrequencyList[18];
+	C_MIN_PATTERN_12[3] = FrequencyList[16];
+
+	C_MIN_PATTERN_13[0] = FrequencyList[18];
+	C_MIN_PATTERN_13[1] = FrequencyList[18];
+	C_MIN_PATTERN_13[2] = FrequencyList[16];
+	C_MIN_PATTERN_13[3] = FrequencyList[18];
+
+	C_MIN_PATTERN_14[0] = FrequencyList[17];
+	C_MIN_PATTERN_14[1] = FrequencyList[17];
+	C_MIN_PATTERN_14[2] = FrequencyList[15];
+	C_MIN_PATTERN_14[3] = FrequencyList[17];
+
+	C_MIN_PATTERN_15[0] = FrequencyList[16];
+	C_MIN_PATTERN_15[1] = FrequencyList[16];
+	C_MIN_PATTERN_15[2] = FrequencyList[19];
+	C_MIN_PATTERN_15[3] = FrequencyList[16];
+
+	C_MIN_PATTERN_16[0] = FrequencyList[14];
+	C_MIN_PATTERN_16[1] = FrequencyList[14];
+	C_MIN_PATTERN_16[2] = FrequencyList[18];
+	C_MIN_PATTERN_16[3] = FrequencyList[14];
+
+}
+
 // restarting from death screen, moving to play state
 void restart(){
 
+	selectFrequencies();
 	setup_screen_notes();
+
+	Serial.print(C_MIN_PATTERN_9[0]);
 
 	tft.fillScreen(ILI9341_BLACK);
 	addLine(3);
