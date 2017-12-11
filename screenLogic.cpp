@@ -78,7 +78,7 @@ struct Note {
 };
 
 // temporary song:
-int song_1[] = {1, 3, 5,  7,  9, 10, 11, 17, 25};
+int song_1[10];
 int song_2[] = {2, 6, 8, 12, 16, 19, 20, 22, 28, 30};
 int song_3[] = {0, 4, 13, 14, 18, 21, 24, 26, 27, 29};
 
@@ -88,7 +88,7 @@ Note screen_notes1[MAX_RENDERED_NOTES];
 Note screen_notes2[MAX_RENDERED_NOTES];
 Note screen_notes3[MAX_RENDERED_NOTES];
 
-// goes through the first song for displaying notes
+// goes through the first song for displaying note
 int song_counter_1 = 0;
 int song_counter_2 = 0;
 int song_counter_3 = 0;
@@ -223,7 +223,7 @@ void setup_screen_notes(){
 
 	int additionalCounter = 0;
 
-	for (int i = 0; i < 30; i++){
+	for (int i = 0; i < 27; i++){
 		int a = randomNumber(4);
 
 		if (a % 3 == 0 && screen_counter1 != 10){
@@ -522,6 +522,7 @@ void processTouch(){
 					tft.setCursor(0,0);
 					tft.setTextSize(2);
 					tft.print(points);
+
 
 					// call tone player
 					playNote();
@@ -853,6 +854,9 @@ void advance(Note &n){
 	int progression = n.progression;
 	int num = n.num;
 
+	if (num > 3){
+		num -= 3;
+	}
 
 	num++;
 	int interval = ScreenHeight / (lines+1);
