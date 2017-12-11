@@ -124,11 +124,25 @@ const int D_MIN[] = {147, 165, 175, 196, 220, 233, 262 /*c*/, 117 /*C*/,
 	 									147, 165, 175, 196, 220, 233, 262 /*c*/,
 										294, 330, 349, 392, 440, 466, 523 /*C*/ };
 
-
 const int C_MAJ[] = {147, 165, 175, 196, 220, 245, 262 /*c*/, 117 /*C*/,
 	 									147, 165, 175, 196, 220, 245, 262 /*c*/,
 										294, 330, 349, 392, 440, 494, 523 /*C*/ };
 
+const int Weird[] = {523, 587, 659, 698, 784, 880, 988 /*c*/, 1047 /*C*/,
+	 									1175, 1319, 1397, 1567, 1760, 1976, 2093 /*c*/,
+										294, 330, 349, 392, 440, 494, 523 /*C*/ };
+
+const int Chinese[] = {93, 104, 117, 139, 156, 185, 208 /*c*/, 233 /*C*/,
+	 									277, 311, 370, 415, 466, 554, 622 /*c*/,
+										740, 831, 932, 1109, 1254, 1480, 1661 /*C*/ };
+
+const int Grater[] = {93, 104, 117, 139, 93, 104, 117 /*c*/, 233 /*C*/,
+		 									277, 311, 370, 415, 277, 311, 370 /*c*/,
+											740, 831, 932, 1109, 740, 831, 932 /*C*/ };
+
+const int Spouse[] = {156, 185, 117, 139, 156, 185, 208 /*c*/, 233 /*C*/,
+		 									466, 311, 622, 415, 466, 311, 622 /*c*/,
+											740, 831, 932, 440, 466, 523, 523 /*C*/ };
 
 int FrequencyList[22];
 
@@ -272,11 +286,11 @@ void setup(){
 	tft.fillScreen(ILI9341_BLACK);
 
 	// setting up structs for songs.  To modify / add / remove songs change these values.  Note that you must update the above numsongs and size of songs[]
-	String title[] = {"Mushroom Kingdom Overworld", "Dream Land", "Hyrule Overworld", "Type A (Korobeiniki)", "Green Hills Zone", "Dr. Wily Stage Theme", "Mortal Kombat!"};
-	String game[] = {"Super Mario Bros.", "Kirby's Dream Land", "The Legend of Zelda", "Tetris", "Sonic the Hedgehog", "Mega Man II", "Mortal Kombat"};
+	String title[] = {"Symphony in C Minor", "Songé in C Major", "Piece in D Minor", "Disonance in no particular key", "Chinese", "Grater", "Spouse"};
+	String game[] = {"Cànadià.", "Seattle", "Mexico", "Calgary", "Somewhere in China", "Sychelles", "NYC"};
 	int length[] = {70, 33, 64, 65, 79, 31, 81}; //in seconds
 	int difficulty[] = {2, 1, 1, 2, 1, 3, 3}; //no current effect on game play
-	String artist[] = {"Koji Kondo", "Jun Ishikawa", "Koji Kondo", "Hirakazu Tanaka", "Masato Nakamura", "Takashi Tateishi", "The Immortals"};
+	String artist[] = {"Amir", "Random Number generator", "voltage fluctuations", "code", "some header file", "integers", "Mozart"};
 	//Names of songs, games and artists are not our property and belong to their original owners.  They are being used here for demonstation and educational purposes and their copyrighted music is not implemented
 
 	for (int i = 0; i < numsongs; i++){
@@ -415,9 +429,33 @@ void selectFrequencies(){
 		}
 	}
 
-	else {
+	else if (songToPlay % 7 == 2) {
 		for (int i = 0; i < 22; i++){
 				FrequencyList[i] = D_MIN[i];
+		}
+	}
+
+	else if (songToPlay % 7 == 3) {
+		for (int i = 0; i < 22; i++){
+				FrequencyList[i] = Weird[i];
+		}
+	}
+
+	else if (songToPlay % 7 == 4) {
+		for (int i = 0; i < 22; i++){
+				FrequencyList[i] = Chinese[i];
+		}
+	}
+
+	else if (songToPlay % 7 == 5) {
+		for (int i = 0; i < 22; i++){
+				FrequencyList[i] = Grater[i];
+		}
+	}
+
+	else if (songToPlay % 7 == 6) {
+		for (int i = 0; i < 22; i++){
+				FrequencyList[i] = Spouse[i];
 		}
 	}
 
