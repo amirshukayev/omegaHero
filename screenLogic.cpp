@@ -402,7 +402,6 @@ void restart(){
 	song_counter_1 = 0;
 	song_counter_2 = 0;
 	song_counter_3 = 0;
-	lives = 3;
 
 	for (int i = 0; i < MAX_RENDERED_NOTES; i++){
 		screen_notes1[i].num = -1;
