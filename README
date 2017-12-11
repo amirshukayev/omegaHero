@@ -2,7 +2,10 @@
 CMPUT 274 Assignment 3 (Final Project)
 
 DESCRIPTION
-	This game is modeled based off
+	This game is modeled based off of GUITAR HERO and TAP TAP REVENGE
+	Currently features 7 amazing songs!! We recommend: Chinese and Song in C Major.
+	Don't miss any notes, since you will lose lives.
+	Features: randomly generated play and music! (it still sounds great though, except for dissonance in no particular key)
 
 TO RUN THE CODE
 	Unzip the folder
@@ -47,7 +50,7 @@ FILE STRUCTURE
 		a whole as well as the imports from other files
 	menus.cpp handles drawing, updating and interacting with the menu system
 	sorting.cpp handles the sorting of the song list using Quicksort
-	menus.h / sorting.h are the headerfiles for the above two files, respectively
+	menus.h / sorting.h are the header files for the above two files, respectively
 	song.h is the structure for the storage of song metadata
 
 GAME INSTRUCTIONS
@@ -82,13 +85,11 @@ HELP AND INFO
 	- The game is played entirely through the touch screen, thus all menu navigation
 	 		and gameplay is handled there.  It should be intuitive what each button
 			does, but the game instructions above are more explicit
-	- Note that the information for the songs in the song list do not change the
-			gameplay or audio, they are purely for a proof of concept of the sorting
-			methods, as implementing the songs would only have been tedious without
-			adding value to the project as a whole.  However note that the highscores
-			ARE associated with the chosen song, so the selection does have an effect
-			in practice.
-	- Missing a note does not cause you to lose lives or points
+	- The length and difficulty of each song has no bearing on gameplay and are purely
+			for demonstrating the multiple options for sorting the list.  The actual
+			difficulty of the game is controlled in the Difficulty Select menu.
+	- Each song corresponds to a different set of sounds with a semi-random sequence
+			of "notes" to hit, with each game ending when you run out of lives
 	- High Scores reset upon restarting the Arduino
 	- If adding new songs to the song list make sure to add the metadata to the
 			appropriate location of each array for the name, length (in seconds),
@@ -96,7 +97,7 @@ HELP AND INFO
 	- If you have added or removed any songs be sure to modify the numsongs
 			variable and the initial size of the songs array
 	- The order of the audio notes in the song is a set of preset arrays of frequencies
-			in the C-Minor key which are chosen at random
+			in the different keys which are chosen at random
 	- The order of the visual notes (that you tap in game) is based on a semi-random
 			array of preset values
 
