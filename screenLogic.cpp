@@ -78,8 +78,8 @@ struct Note {
 };
 
 // temporary song:
-int song_1[] = {1, 3, 5,  7,  9, 10, 11, 17, 25, 32};
-int song_2[] = {2, 6, 8, 12, 16, 19, 20, 22, 28, 30, 31};
+int song_1[] = {1, 3, 5,  7,  9, 10, 11, 17, 25};
+int song_2[] = {2, 6, 8, 12, 16, 19, 20, 22, 28, 30};
 int song_3[] = {0, 4, 13, 14, 18, 21, 24, 26, 27, 29};
 
 // these arrays holds all the notes on the screen to be rendered
@@ -216,6 +216,44 @@ int lengthString(String s);
 void printString(String s);
 void drawLives();
 
+
+void setup_screen_notes(){
+
+	int screen_counter1 = 0; int screen_counter2 = 0; int screen_counter3 = 0;
+
+	int additionalCounter = 0;
+
+	for (int i = 0; i < 30; i++){
+		int a = randomNumber(4);
+
+		if (a % 3 == 0 && screen_counter1 != 10){
+			song_1[screen_counter1] = additionalCounter;
+			screen_counter1++;
+			additionalCounter++;
+		}
+		else if (a % 3 == 1 && screen_counter2 != 10){
+			song_2[screen_counter2] = additionalCounter;
+			screen_counter2++;
+			additionalCounter++;
+		}
+		else if (a % 3 == 2 && screen_counter3 != 10){
+			song_3[screen_counter3] = additionalCounter;
+			screen_counter3++;
+			additionalCounter++;
+		}
+
+	}
+
+	for (int i = 0; i < 10; i++){
+		Serial.print("yeah: ");
+		Serial.println(song_1[i]);
+	}
+
+
+}
+
+
+
 // initializes program
 void setup(){
 	init();
@@ -348,6 +386,8 @@ int lengthString(String s){
 
 // restarting from death screen, moving to play state
 void restart(){
+
+	setup_screen_notes();
 
 	tft.fillScreen(ILI9341_BLACK);
 	addLine(3);
@@ -812,6 +852,8 @@ void advance(Note &n){
 	// this information gets note value and calculates where to draw it and stuff
 	int progression = n.progression;
 	int num = n.num;
+
+
 	num++;
 	int interval = ScreenHeight / (lines+1);
 	int centerX = (num-1)*interval + 1;
